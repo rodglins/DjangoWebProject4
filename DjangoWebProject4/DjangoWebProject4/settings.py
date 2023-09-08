@@ -12,6 +12,13 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 import posixpath
+from django.db.models import BigAutoField
+
+# Configure o DEFAULT_AUTO_FIELD
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# settings.py
+FILE_CHARSET = 'utf-8'
 
 DEFAULT_CHARSET = 'utf-8'
 
@@ -40,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_select2',
 ]
 
 # Middleware framework
@@ -87,7 +95,7 @@ WSGI_APPLICATION = 'DjangoWebProject4.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # Usamos o backend MySQL
-        'NAME': 'books',          # Nome do banco de dados
+        'NAME': 'library',          # Nome do banco de dados
         'USER': 'root',                 # Nome de usuário do banco de dados
         'PASSWORD': 'pi2023g13',              # Senha do banco de dados
         'HOST': 'localhost',                  # Host onde o banco de dados está sendo executado (geralmente 'localhost')
@@ -128,8 +136,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATIC_URL = '/static/'
 #STATIC_ROOT = posixpath.join(*(BASE_DIR.split(os.path.sep) + ['static']))
+# settings.py
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

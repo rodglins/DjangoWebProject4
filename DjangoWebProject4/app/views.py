@@ -1,17 +1,165 @@
 """
 Definition of views.
 """
-from jsonfield import JSONField
-from datetime import datetime
-from django.shortcuts import render
-from django.http import HttpRequest
-from django.db.models import Avg, Sum
-from .forms import ISBNForm
-from .models import Book
 import matplotlib.pyplot as plt
 import requests
 import certifi
 import json
+#from jsonfield import JSONField
+from datetime import datetime
+from django.shortcuts import render, redirect
+from django.http import HttpRequest
+from django.db.models import Avg, Sum
+from django.contrib import messages
+from .models import Book, Cidade, TipoUsuario, RegistroLivros, Autores
+from .forms import UsuarioForm, ISBNForm, LivroForm
+from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidget,Select2Widget
+
+
+
+#def cadastrar_livro(request):
+#    if request.method == 'POST':
+#        form = LivroForm(request.POST)
+#        if form.is_valid():
+#            form.save()
+#            messages.success(request, 'Livro cadastrado com sucesso!')
+#            return redirect('/cadastrar_livro')  # Redirecione para onde você deseja após o cadastro
+#    else:
+#        form = LivroForm()
+#    return render(request, 'app/cadastro_livro.html', {'form': form})
+
+
+
+
+
+
+
+#def cadastrar_livro(request):
+#    if request.method == 'POST':
+#        form = LivroForm(request.POST)
+#        if form.is_valid():
+#            livro = form.save(commit=False)
+
+#            # Obtenha nomes de autores personalizados e divida em uma lista
+#            autores_personalizados = request.POST.get('autores_personalizados', '')
+#            autores_lista = [autor.strip() for autor in autores_personalizados.split(',')]
+
+#            # Para cada nome de autor na lista, verifique e crie se necessário
+#            autores_relacionados = []
+#            for autor_nome in autores_lista:
+#                # Divida o nome do autor em partes
+#                partes_nome = autor_nome.split()
+#                if len(partes_nome) >= 2:  # Verifique se há pelo menos um primeiro nome e um último nome
+#                    primeiro_nome = partes_nome[0]
+#                    ultimo_nome = partes_nome[-1]
+
+#                    # Verifique se o autor já existe com base em primeiro_nome e ultimo_nome
+#                    autor, created = Autores.objects.get_or_create(
+#                        primeiro_nome=primeiro_nome,
+#                        ultimo_nome=ultimo_nome
+#                    )
+#                    autores_relacionados.append(autor)
+
+#            # Salve o livro
+#            livro.save()
+
+#            # Associe os autores ao livro
+#            livro.autores_registro_livros.set(autores_relacionados)
+
+#            messages.success(request, 'Livro cadastrado com sucesso!')
+
+#            return redirect('/cadastrar_livro')  # Redirecionar para uma página de sucesso
+#    else:
+#        form = LivroForm()
+#    return render(request, 'app/cadastro_livro.html', {'form': form})
+
+
+
+
+def cadastrar_livro(request):
+    if request.method == 'POST':
+        form = LivroForm(request.POST)
+        if form.is_valid():
+            livro = form.save(commit=False)
+            livro.save()
+
+            # Limpe a associação anterior de assuntos
+            livro.assuntos_registro_livros.clear()
+
+            # Associe os assuntos selecionados no formulário
+            assuntos_selecionados = form.cleaned_data['assuntos_registro_livros']
+            livro.assuntos_registro_livros.add(*assuntos_selecionados)
+
+
+            # Limpe a associação anterior de autores
+            livro.autores_registro_livros.clear()
+
+            # Associe os autores selecionados no formulário
+            autores_selecionados = form.cleaned_data['autores_registro_livros']
+            livro.autores_registro_livros.add(*autores_selecionados)
+
+            messages.success(request, 'Livro cadastrado com sucesso!')
+            return redirect('/cadastrar_livro')  # Redirecionar para uma pagina de sucesso
+
+    else:
+        form = LivroForm()
+    return render(request, 'app/cadastro_livro.html', {'form': form})
+
+
+
+#def cadastrar_livro(request):
+#    if request.method == 'POST':
+#        form = LivroForm(request.POST)
+#        if form.is_valid():
+#            livro = form.save(commit=False)
+
+#            # Obtenha nomes de autores personalizados e divida em uma lista
+#            autores_personalizados = request.POST.get('autores_personalizados', '')
+#            autores_lista = [autor.strip() for autor in autores_personalizados.split(',')]
+
+#            # Para cada nome de autor na lista, verifique e crie se necessário
+#            autores_relacionados = []
+#            for autor_nome in autores_lista:
+#                # Divida o nome do autor em partes
+#                partes_nome = autor_nome.split()
+#                if len(partes_nome) >= 2:  # Verifique se há pelo menos dois elementos na lista
+#                    primeiro_nome = partes_nome[0]
+#                    ultimo_nome = partes_nome[-1]
+
+#                    # Verifique se o autor já existe com base em primeiro_nome e ultimo_nome
+#                    autor, created = Autores.objects.get_or_create(
+#                        primeiro_nome=primeiro_nome,
+#                        ultimo_nome=ultimo_nome
+#                    )
+#                    autores_relacionados.append(autor)
+
+#            # Salve o livro
+#            livro.save()
+
+#            # Associe os autores ao livro
+#            livro.autores_registro_livros.set(autores_relacionados)
+
+#            messages.success(request, 'Livro cadastrado com sucesso!')
+
+#            return redirect('/cadastrar_livro')  # Redirecionar para uma pagina de sucesso
+#    else:
+#        form = LivroForm()
+#    return render(request, 'app/cadastro_livro.html', {'form': form})
+
+
+
+
+def cadastrar_usuario(request):
+    if request.method == 'POST':
+        form = UsuarioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuário cadastrado com sucesso!')
+            return redirect('/cadastrar_usuario')  # Redirecione para uma pagina de sucesso
+    else:
+        form = UsuarioForm()
+    return render(request, 'app/cadastrar_usuario.html', {'form': form})
+
 
 def search_books(request):
     if request.method == 'GET':
@@ -128,3 +276,7 @@ def about(request):
             'year':datetime.now().year,
         }
     )
+
+
+def teste_view(request):
+    return render(request, 'app/teste.html')

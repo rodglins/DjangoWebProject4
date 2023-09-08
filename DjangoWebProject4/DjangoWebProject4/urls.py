@@ -3,16 +3,22 @@ Definition of urls for DjangoWebProject4.
 """
 
 from datetime import datetime
-from django.urls import path
+from django.urls import path, include
 from django.contrib import admin
 from django.contrib.auth.views import LoginView, LogoutView
 from app import forms, views
 from django.conf import settings
 from django.conf.urls.static import static
+from django_select2 import urls as select2_urls
+
 
 #app_name = 'seu_app'
 
 urlpatterns = [
+    path('teste/', views.teste_view, name='teste'),
+    path('select2/', include(select2_urls)),
+    path('cadastrar_livro/', views.cadastrar_livro, name='cadastrar_livro'),
+    path('cadastrar_usuario/', views.cadastrar_usuario, name='cadastrar_usuario'),
     path('search_books/', views.search_books, name='search_books'),
     path('search/', views.search_and_save, name='search'),
     path('grafico/', views.grafico, name='grafico'),

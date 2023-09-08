@@ -58,6 +58,15 @@
     <Folder Include="DjangoWebProject4\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="app\static\app\content\select2.css" />
+    <Content Include="app\static\app\scripts\jquery3.js" />
+    <Content Include="app\static\app\scripts\select2full.js" />
+    <Content Include="app\templates\app\cadastro_livro - Copy %282%29.html" />
+    <Content Include="app\templates\app\cadastro_livro - Copy %283%29.html" />
+    <Content Include="app\templates\app\cadastro_livro - Copy.html" />
+    <Content Include="app\templates\app\teste.html" />
+    <Content Include="app\templates\app\cadastro_livro.html" />
+    <Content Include="app\templates\app\cadastrar_usuario.html" />
     <Content Include="app\templates\app\search_books.html" />
     <Content Include="app\templates\app\result.html" />
     <Content Include="app\templates\app\search.html" />
