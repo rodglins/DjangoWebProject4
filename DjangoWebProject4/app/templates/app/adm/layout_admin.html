@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} - Django Library Application</title>
+    <title>{{ Biblio }} - Django Library Application</title>
     {% load static %}
   
     <link rel="stylesheet" type="text/css" href="{% static 'app/content/site.css' %}" />
@@ -40,10 +40,23 @@
                         <a class="nav-link" href="{% url 'home' %}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                        <a class="nav-link" href="{% url 'search' %}">Gravar</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+                        <a class="nav-link" href="{% url 'cadastrar_livro' %}">Cadastro Livro</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'cadastrar_usuario' %}">Cadastro Usuário</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'registro_livros_form' %}">Tombar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'registro_emprestimo' %}">Emprestimo</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'atualizar_emprestimo' %}">Renovação</a>
                     </li>
                 </ul>
                 {% include 'app/loginpartial.html' %}
@@ -56,7 +69,7 @@
     </div>
 
     <footer class="bg-dark text-light text-center py-3">
-        <p>&copy; {{ year }} - My Django Application</p>
+        <p>&copy; {{ 2023 }} - My Django Application</p>
     </footer>
 
     <script src="{% static 'app/scripts/jquery-3.5.1.slim.min.js' %}"></script>

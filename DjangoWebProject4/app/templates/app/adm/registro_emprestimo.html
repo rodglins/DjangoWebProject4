@@ -1,0 +1,64 @@
+{% extends "app/adm/layout_admin.html" %}
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Inclua aqui seus estilos e scripts -->
+</head>
+<body>
+{% block content %}
+
+
+
+
+  <h1>Registrar Empréstimo</h1>
+
+
+    {% if form.errors %}
+  <div class="alert alert-danger">
+    <ul>
+      {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+
+  <form method="post">
+    {% csrf_token %}
+    
+<!-- Seleção de Usuário -->
+<label for="id_usuario">Usuário:</label>
+<select name="id_usuario" id="id_usuario">
+  <option value="" disabled selected>Escolha um usuário</option>
+  {% for usuario in usuarios %}
+    <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+  {% endfor %}
+</select><br>
+
+    <!-- Entrada de texto para ID do Tombo -->
+    <label for="id_tombo_input">Tombo:</label>
+    <input type="number" name="id_tombo_input" id="id_tombo_input"><br>
+
+
+
+
+<!-- Tipo de Empréstimo -->
+<label for="{{ form.id_tipos_de_emprestimos.id_for_label }}">Tipo de Empréstimo:</label>
+
+<select name="id_tipos_de_emprestimos" id="id_tipos_de_emprestimos">
+  <option value="" disabled selected>Escolha um tipo de empréstimo</option>
+  {% for tipo in tipo_emprestimo %}
+    <option value="{{ tipo.id }}">{{ tipo.tipo }}</option>
+  {% endfor %}
+</select><br>
+
+
+
+    <button type="submit">Registrar Empréstimo</button>
+  </form>
+{% endblock %}
+</body>
+</html>

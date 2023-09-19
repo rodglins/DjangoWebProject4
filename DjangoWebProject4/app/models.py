@@ -6,8 +6,23 @@ Definition of models.
 from django.db import models
 from django_select2.forms import ModelSelect2MultipleWidget
 from django import forms
+from django.utils import timezone
 
-# Create your models here.
+
+class ConfigPage(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+
+    def __str__(self):
+        return self.title
+
+
+class TipoAquisicao(models.Model):
+    nome = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.nome
+
 
 class Assunto(models.Model):
     descricao = models.CharField(max_length=255)
@@ -88,6 +103,19 @@ class RegistroLivros(models.Model):
     def __str__(self):
         return self.titulo
 
+
+class Tombo(models.Model):
+    exemplar = models.IntegerField()
+    id_tipo_aquisicao = models.ForeignKey(TipoAquisicao, on_delete=models.SET_NULL, null=True)
+    data_aquisicao = models.DateField(null=True)
+    id_registro_livros = models.ForeignKey(RegistroLivros, on_delete=models.SET_NULL, null=True)
+    preco = models.FloatField(null=True)
+
+    def __str__(self):
+        livro_titulo = self.id_registro_livros.titulo if self.id_registro_livros else "N/A"
+        return f"Tombo {self.exemplar} - Livro: {livro_titulo}"
+
+
 class AutoresRegistroLivros(models.Model):
     autores = models.ForeignKey('Autores', on_delete=models.SET_NULL, null=True, related_name='autores_registros_livros')
     registro_livros = models.ForeignKey(RegistroLivros, on_delete=models.SET_NULL, null=True, related_name='autores_registros_livros')
@@ -110,6 +138,7 @@ class Usuario(models.Model):
     rua = models.CharField(max_length=255, null=True, blank=True)
     id_cidade = models.ForeignKey(Cidade, on_delete=models.SET_NULL, null=True)
     telefone = models.CharField(max_length=15, null=True, blank=True)
+    email = models.CharField(max_length=255, null=True, blank=True)
     id_tipos_de_usuarios = models.ForeignKey(TipoUsuario, on_delete=models.SET_NULL, null=True)
 
 class Book(models.Model):
@@ -131,3 +160,45 @@ class Book(models.Model):
     def __str__(self):
         return self.isbn
 
+
+
+
+class TipoDeEmprestimo(models.Model):
+    tipo = models.CharField(max_length=255)
+    prazo_em_dias = models.IntegerField()
+
+    class Meta:
+        db_table = 'app_tipodeemprestimo'  # Nome da tabela no banco de dados
+
+    def __str__(self):
+        return self.tipo
+
+
+
+
+class LimiteDeLivros(models.Model):
+    quantidade = models.IntegerField()
+    tipo_de_usuario = models.ForeignKey(TipoUsuario, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"{self.quantidade} livros para {self.tipo_de_usuario}"
+
+
+
+class StatusEmprestimo(models.Model):
+    tipo = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.tipo
+
+
+class Emprestimo(models.Model):
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    id_tombo = models.ForeignKey(Tombo, on_delete=models.CASCADE)
+    data_emprestimo = models.DateField(default=timezone.now)
+    data_devolucao = models.DateField()
+    id_tipos_de_emprestimos = models.ForeignKey(TipoDeEmprestimo, on_delete=models.CASCADE)
+    status_emprestimo = models.ForeignKey(StatusEmprestimo, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Empréstimo {self.id}"

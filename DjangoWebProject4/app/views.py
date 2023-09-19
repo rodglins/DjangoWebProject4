@@ -6,76 +6,252 @@ import requests
 import certifi
 import json
 #from jsonfield import JSONField
-from datetime import datetime
-from django.shortcuts import render, redirect
-from django.http import HttpRequest
-from django.db.models import Avg, Sum
+from datetime import datetime, timedelta, date
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpRequest, HttpResponseBadRequest, JsonResponse, HttpResponse
+from django.db.models import Avg, Sum, Q
 from django.contrib import messages
-from .models import Book, Cidade, TipoUsuario, RegistroLivros, Autores
-from .forms import UsuarioForm, ISBNForm, LivroForm
+from .models import Book, Cidade, TipoUsuario, RegistroLivros, Autores, Tombo, Usuario, Emprestimo, TipoDeEmprestimo, StatusEmprestimo, LimiteDeLivros
+from .forms import UsuarioForm, ISBNForm, LivroForm, TomboForm, EmprestimoForm, UsuarioForm2
 from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidget,Select2Widget
+from django.utils import timezone
+from django.contrib.auth.decorators import user_passes_test, login_required
+from django.contrib.auth.models import Group
 
 
 
-#def cadastrar_livro(request):
-#    if request.method == 'POST':
-#        form = LivroForm(request.POST)
-#        if form.is_valid():
-#            form.save()
-#            messages.success(request, 'Livro cadastrado com sucesso!')
-#            return redirect('/cadastrar_livro')  # Redirecione para onde você deseja após o cadastro
-#    else:
-#        form = LivroForm()
-#    return render(request, 'app/cadastro_livro.html', {'form': form})
+"""
+Definition of groups:
+"""
+
+def is_users(user):
+    return user.groups.filter(name='Usuarios').exists()
+
+def is_admin(user):
+    return user.groups.filter(name='Administradores').exists()
+
+"""
+Definition of index redirect:
+"""
+
+@login_required
+def redirecionar_apos_login(request):
+    if request.user.groups.filter(name='Usuarios').exists():
+        return redirect('../meus_emprestimos')  # Redireciona para a página de empréstimos
+    elif request.user.groups.filter(name='Administradores').exists():
+        return redirect('../admin-config')  # Redireciona para a página de configuração de administradores
+    else:
+        # Caso o usuário não pertença a nenhum grupo específico, redirecione para uma página padrão
+        return redirect('index')
+
+@login_required
+@user_passes_test(is_admin)
+def admin_config_page(request):
+    # Sua lógica para a página de administradores aqui
+    return render(request, 'app/adm/admin_config_page.html')
+
+
+
+"""
+Definition users views:
+"""
+
+@login_required
+@user_passes_test(is_users)
+def meus_emprestimos(request):
+    # Suponho que você tenha o usuário logado disponível em request.user
+    # Substitua 'email_do_usuario_logado' pelo email do usuário logado
+    email_do_usuario_logado = request.user.email
+
+    # Execute a query para obter os empréstimos do usuário logado
+    emprestimos = Emprestimo.objects.filter(id_usuario__email=email_do_usuario_logado)
+
+    return render(request, 'app/users/meus_emprestimos.html', {'emprestimos': emprestimos})
+
+
+@login_required
+@user_passes_test(is_users)
+def editar_cadastro(request):
+    user_id = request.user.id  # ID do usuário logado
+    usuario = get_object_or_404(Usuario, id=user_id)  # Busca o usuário com base no ID do usuário logado
+    
+    if request.method == 'POST':
+        form = UsuarioForm2(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            # Redirecione para a página de detalhes do usuário após a atualização
+            return redirect('detalhes_usuario', email=usuario.email)
+    else:
+        form = UsuarioForm2(instance=usuario)
+    
+    return render(request, 'app/users/editar_cadastro.html', {'form': form})
+
+
+
+"""
+Definition admin views:
+"""
+
+
+
+@user_passes_test(is_admin)
+def get_emprestimos(request, user_id):
+    emprestimos = Emprestimo.objects.filter(id_usuario=user_id, status_emprestimo_id=1).values('id')
+
+    return JsonResponse({'emprestimos': list(emprestimos)})
+
+@user_passes_test(is_admin)
+def atualizar_emprestimo(request):
+    if request.method == 'POST':
+        id_usuario = request.POST.get('id_usuario')
+        id_emprestimo = request.POST.get('id_emprestimo')
+
+        # Verifique se o usuário e o empréstimo existem e têm o status correto (1)
+        try:
+            usuario = Usuario.objects.get(id=id_usuario)
+            emprestimo = Emprestimo.objects.get(id=id_emprestimo, id_usuario=usuario, status_emprestimo_id=1)
+        except (Usuario.DoesNotExist, Emprestimo.DoesNotExist):
+            return render(request, 'app/adm/atualizar_emprestimo.html', {'usuarios': Usuario.objects.all()})
+
+        # Atualize o status do empréstimo para 4 e a data de devolução para 7 dias adiante
+        emprestimo.status_emprestimo_id = 4
+        emprestimo.data_devolucao += timedelta(days=7)
+        emprestimo.save()
+
+        return redirect('listar_emprestimos_usuario', usuario_id=id_usuario)
+    else:
+        return render(request, 'app/adm/atualizar_emprestimo.html', {'usuarios': Usuario.objects.all()})
+
+
+
+@user_passes_test(is_admin)
+def listar_emprestimos_usuario(request, usuario_id):
+    usuario = get_object_or_404(Usuario, pk=usuario_id)
+    emprestimos = Emprestimo.objects.filter(id_usuario=usuario_id)
+    return render(request, 'app/adm/listar_emprestimos_usuario.html', {'usuario': usuario, 'emprestimos': emprestimos})
+
+
+@user_passes_test(is_admin)
+def registro_emprestimo(request):
+    if request.method == 'POST':
+        form = EmprestimoForm(request.POST)
+        if form.is_valid():
+            # Captura o valor do campo id_tombo_input e atribui ao campo id_tombo
+            emprestimo = form.save(commit=False)
+            emprestimo.id_tombo_id = form.cleaned_data['id_tombo_input']
+
+            # Verifique se o Tombo com o ID fornecido existe
+            try:
+                tombo = Tombo.objects.get(id=emprestimo.id_tombo_id)
+            except Tombo.DoesNotExist:
+                form.add_error('id_tombo_input', 'O Tombo com este ID não existe.')
+                return render(request, 'app/adm/registro_emprestimo.html', {'form': form})
+            
+             # Consulte a tabela app_limitedelivros para obter o limite do usuário com base em seu tipo de usuário
+            limite_emprestimos = LimiteDeLivros.objects.filter(
+                tipo_de_usuario=emprestimo.id_usuario.id_tipos_de_usuarios
+            ).values('quantidade').first()
+
+            if limite_emprestimos:
+                # Verifique a quantidade atual de empréstimos em andamento para o usuário
+                emprestimos_em_andamento = Emprestimo.objects.filter(
+                    id_usuario=emprestimo.id_usuario,
+                    status_emprestimo_id=1  # Verifique se o status é 'emprestado'
+                ).count()
+
+                if emprestimos_em_andamento >= limite_emprestimos['quantidade']:
+                    form.add_error(None, "Limite de empréstimos atingido para este usuário.")
+                    return render(request, 'app/adm/registro_emprestimo.html', {'form': form})
+
+
+            # Verifique se já existe um empréstimo com o mesmo livro e usuário
+            emprestimo_existente = Emprestimo.objects.filter(
+                id_tombo=emprestimo.id_tombo_id,
+                status_emprestimo_id=1  # Verifique se o status é 'emprestado'
+            ).exists()
+
+            if not emprestimo_existente:
+                emprestimo.status_emprestimo = StatusEmprestimo.objects.get(id=1)  # Defina o status adequado
+                emprestimo.data_emprestimo = timezone.now().date()
+                tipo_emprestimo = TipoDeEmprestimo.objects.get(id=emprestimo.id_tipos_de_emprestimos.id)
+                emprestimo.data_devolucao = timezone.now().date() + timedelta(days=tipo_emprestimo.prazo_em_dias)
+                emprestimo.save()
+                return redirect('listar_emprestimos_usuario', usuario_id=emprestimo.id_usuario.id)
+            else:
+                # Empréstimo duplicado, você pode tratar isso de acordo com suas necessidades
+                # Neste exemplo, apenas redirecionamos de volta ao formulário com uma mensagem de erro
+                form.add_error(None, "Este livro já foi emprestado.")
+    else:
+        form = EmprestimoForm()
+
+    usuarios = Usuario.objects.all()  # Ou outra consulta para obter a lista de usuários
+    tipo_emprestimo = TipoDeEmprestimo.objects.all()
+
+    return render(request, 'app/adm/registro_emprestimo.html', {'form': form, 'usuarios': usuarios, 'tipo_emprestimo': tipo_emprestimo})
+
+
+@user_passes_test(is_admin)
+def registro_livros_form(request):
+    registros = RegistroLivros.objects.all()
+    selected_registro = None
+    tombos = None
+    form = TomboForm()
+
+    if request.method == 'POST':
+        registro_id = request.POST.get('registro_id')
+        if registro_id:
+            selected_registro = RegistroLivros.objects.get(pk=registro_id)
+            tombos = selected_registro.tombo_set.all()
+
+    return render(request, 'app/adm/registro_livros_form.html', {
+        'registros': registros,
+        'selected_registro': selected_registro,
+        'tombos': tombos,
+        'form': form
+    })
 
 
 
 
 
+@user_passes_test(is_admin)
+def exibir_registro(request):
+    if request.method == 'POST':
+        registro_id = request.POST.get('registro_id')
+        registro = get_object_or_404(RegistroLivros, pk=registro_id)
+        tombos = Tombo.objects.filter(id_registro_livros=registro_id)
+        form = TomboForm()
+        return render(request, 'app/adm/cadastro_tombo.html', {'registro': registro, 'tombos': tombos, 'form': form})
+    else:
+        # Redirecione de volta para a página de seleção de registro
+        return redirect('registro_livros_form')
 
 
-#def cadastrar_livro(request):
-#    if request.method == 'POST':
-#        form = LivroForm(request.POST)
-#        if form.is_valid():
-#            livro = form.save(commit=False)
-
-#            # Obtenha nomes de autores personalizados e divida em uma lista
-#            autores_personalizados = request.POST.get('autores_personalizados', '')
-#            autores_lista = [autor.strip() for autor in autores_personalizados.split(',')]
-
-#            # Para cada nome de autor na lista, verifique e crie se necessário
-#            autores_relacionados = []
-#            for autor_nome in autores_lista:
-#                # Divida o nome do autor em partes
-#                partes_nome = autor_nome.split()
-#                if len(partes_nome) >= 2:  # Verifique se há pelo menos um primeiro nome e um último nome
-#                    primeiro_nome = partes_nome[0]
-#                    ultimo_nome = partes_nome[-1]
-
-#                    # Verifique se o autor já existe com base em primeiro_nome e ultimo_nome
-#                    autor, created = Autores.objects.get_or_create(
-#                        primeiro_nome=primeiro_nome,
-#                        ultimo_nome=ultimo_nome
-#                    )
-#                    autores_relacionados.append(autor)
-
-#            # Salve o livro
-#            livro.save()
-
-#            # Associe os autores ao livro
-#            livro.autores_registro_livros.set(autores_relacionados)
-
-#            messages.success(request, 'Livro cadastrado com sucesso!')
-
-#            return redirect('/cadastrar_livro')  # Redirecionar para uma página de sucesso
-#    else:
-#        form = LivroForm()
-#    return render(request, 'app/cadastro_livro.html', {'form': form})
+@user_passes_test(is_admin)
+def adicionar_tombo(request):
+    if request.method == 'POST':
+        # Obtenha o id_registro_livros_id do formulário
+        id_registro_livros_id = request.POST.get('id_registro_livros_id')
+        
+        # Crie um formulário com os dados do POST
+        form = TomboForm(request.POST)
+        
+        if form.is_valid():
+            # Crie uma instância de Tombo e defina o id_registro_livros_id
+            tombo = form.save(commit=False)
+            tombo.id_registro_livros_id = id_registro_livros_id
+            tombo.save()
+            
+            # Redirecionar para a página de exibição de registros
+            return redirect('exibir_registro')
+    else:
+        form = TomboForm()
+    
+    return render(request, 'app/adm/cadastro_tombo.html', {'form': form})
 
 
 
-
+@user_passes_test(is_admin)
 def cadastrar_livro(request):
     if request.method == 'POST':
         form = LivroForm(request.POST)
@@ -103,52 +279,11 @@ def cadastrar_livro(request):
 
     else:
         form = LivroForm()
-    return render(request, 'app/cadastro_livro.html', {'form': form})
+    return render(request, 'app/adm/cadastro_livro.html', {'form': form})
 
 
 
-#def cadastrar_livro(request):
-#    if request.method == 'POST':
-#        form = LivroForm(request.POST)
-#        if form.is_valid():
-#            livro = form.save(commit=False)
-
-#            # Obtenha nomes de autores personalizados e divida em uma lista
-#            autores_personalizados = request.POST.get('autores_personalizados', '')
-#            autores_lista = [autor.strip() for autor in autores_personalizados.split(',')]
-
-#            # Para cada nome de autor na lista, verifique e crie se necessário
-#            autores_relacionados = []
-#            for autor_nome in autores_lista:
-#                # Divida o nome do autor em partes
-#                partes_nome = autor_nome.split()
-#                if len(partes_nome) >= 2:  # Verifique se há pelo menos dois elementos na lista
-#                    primeiro_nome = partes_nome[0]
-#                    ultimo_nome = partes_nome[-1]
-
-#                    # Verifique se o autor já existe com base em primeiro_nome e ultimo_nome
-#                    autor, created = Autores.objects.get_or_create(
-#                        primeiro_nome=primeiro_nome,
-#                        ultimo_nome=ultimo_nome
-#                    )
-#                    autores_relacionados.append(autor)
-
-#            # Salve o livro
-#            livro.save()
-
-#            # Associe os autores ao livro
-#            livro.autores_registro_livros.set(autores_relacionados)
-
-#            messages.success(request, 'Livro cadastrado com sucesso!')
-
-#            return redirect('/cadastrar_livro')  # Redirecionar para uma pagina de sucesso
-#    else:
-#        form = LivroForm()
-#    return render(request, 'app/cadastro_livro.html', {'form': form})
-
-
-
-
+@user_passes_test(is_admin)
 def cadastrar_usuario(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST)
@@ -158,16 +293,12 @@ def cadastrar_usuario(request):
             return redirect('/cadastrar_usuario')  # Redirecione para uma pagina de sucesso
     else:
         form = UsuarioForm()
-    return render(request, 'app/cadastrar_usuario.html', {'form': form})
+    return render(request, 'app/adm/cadastrar_usuario.html', {'form': form})
 
 
-def search_books(request):
-    if request.method == 'GET':
-        query = request.GET.get('query', '')  # Obtenha o termo de pesquisa da query string
-        # Realize a pesquisa na base de dados usando o campo 'title' do modelo
-        books = Book.objects.filter(title__icontains=query)
-        return render(request, 'app/search_books.html', {'books': books, 'query': query})
 
+
+@user_passes_test(is_admin)
 def search_and_save(request):
     if request.method == 'POST':
         form = ISBNForm(request.POST)
@@ -184,10 +315,10 @@ def search_and_save(request):
                 # Extrair apenas o conteúdo do campo "name" de cada autor
                 author_names = ', '.join([author.get('name', '') for author in authors])
 
-                # Verificar se a editora "Penguin" está na lista de editoras
+
                 publishers = book_data.get('publishers', [])
-                if any(publisher.get('name', '').lower() == 'penguin' for publisher in publishers):
-                    publishers = [{"name": "Penguin"}]
+                #if any(publisher.get('name', '').lower() == 'penguin' for publisher in publishers):
+                #    publishers = [{"name": "Penguin"}]
 
                 book, created = Book.objects.get_or_create(
                     isbn=isbn,
@@ -205,13 +336,13 @@ def search_and_save(request):
                     cover_large=book_data.get('cover', {}).get('large', '')
                 )
 
-                return render(request, 'app/result.html', {'book': book})
+                return render(request, 'app/adm/result.html', {'book': book})
     else:
         form = ISBNForm()
     
-    return render(request, 'app/search.html', {'form': form})
+    return render(request, 'app/adm/search.html', {'form': form})
 
-
+@user_passes_test(is_admin)
 def grafico(request):
     produtos = Produto.objects.all()
 
@@ -236,7 +367,21 @@ def grafico(request):
         'img_path': img_path
     }
 
-    return render(request, 'app/grafico.html', context)
+    return render(request, 'app/adm/grafico.html', context)
+
+
+
+"""
+Definition open views:
+"""
+
+
+def search_books(request):
+    if request.method == 'GET':
+        query = request.GET.get('query', '')  # Obtenha o termo de pesquisa da query string
+        # Realize a pesquisa na base de dados usando o campo 'title' do modelo
+        books = Book.objects.filter(title__icontains=query)
+        return render(request, 'app/search_books.html', {'books': books, 'query': query})
 
 
 def home(request):
@@ -246,7 +391,7 @@ def home(request):
         request,
         'app/index.html',
         {
-            'title':'Home Page',
+            'title':'Library Tools',
             'year':datetime.now().year,
         }
     )
@@ -278,5 +423,9 @@ def about(request):
     )
 
 
-def teste_view(request):
-    return render(request, 'app/teste.html')
+#def teste_view(request):
+#    return render(request, 'app/teste.html')
+
+#@user_passes_test(is_admin)
+#def admin_custom_links(request):
+#    return render(request, 'app/admin_custom_links.html')

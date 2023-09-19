@@ -1,16 +1,10 @@
-{% extends "app/layout.html" %}
+{% extends "app/users/layout_users.html" %}
 
 {% block content %}
 
-{% if user.is_authenticated %}
-    <script>
-        window.location.href = "{% url 'redirecionar_apos_login' %}";
-    </script>
-{% endif %}
-
 
 <div class="jumbotron">
-    <h1>Biblioteca Facil</h1>
+    <h1>Biblioteca Facil TESTE</h1>
     <p class="lead">Este e o site da sua Biblioteca, faca pesquisas e encontre os servicos oferecidos.</p>
     <p><a href="/" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
 </div>

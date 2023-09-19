@@ -28,6 +28,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '6a0e2ab0-3335-4954-9e25-20990b2d1508'
 
@@ -48,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_select2',
+    'crispy_forms',
 ]
 
 # Middleware framework

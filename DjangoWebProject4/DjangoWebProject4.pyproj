@@ -55,24 +55,41 @@
     <Folder Include="app\static\app\scripts\" />
     <Folder Include="app\templates\" />
     <Folder Include="app\templates\app\" />
+    <Folder Include="app\templates\app\adm\" />
+    <Folder Include="app\templates\app\trash\" />
+    <Folder Include="app\templates\app\users\" />
     <Folder Include="DjangoWebProject4\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="app\static\app\content\select2.css" />
     <Content Include="app\static\app\scripts\jquery3.js" />
     <Content Include="app\static\app\scripts\select2full.js" />
-    <Content Include="app\templates\app\cadastro_livro - Copy %282%29.html" />
-    <Content Include="app\templates\app\cadastro_livro - Copy %283%29.html" />
-    <Content Include="app\templates\app\cadastro_livro - Copy.html" />
-    <Content Include="app\templates\app\teste.html" />
-    <Content Include="app\templates\app\cadastro_livro.html" />
-    <Content Include="app\templates\app\cadastrar_usuario.html" />
+    <Content Include="app\templates\app\users\index.html" />
+    <Content Include="app\templates\app\users\layout _users.html" />
+    <Content Include="app\templates\app\users\editar_cadastro.html" />
+    <Content Include="app\templates\app\users\meus_emprestimos.html" />
+    <Content Include="app\templates\app\adm\admin_config_page.html" />
+    <Content Include="app\templates\app\trash\cadastro_livro - Copy %282%29.html" />
+    <Content Include="app\templates\app\trash\cadastro_livro - Copy %283%29.html" />
+    <Content Include="app\templates\app\trash\cadastro_livro - Copy %284%29.html" />
+    <Content Include="app\templates\app\adm\layout_admin.html" />
+    <Content Include="app\templates\app\adm\listar_emprestimos_usuario.html" />
+    <Content Include="app\templates\app\trash\listar_usuarios.html" />
+    <Content Include="app\templates\app\trash\registro_emprestimo - Copy %282%29.html" />
+    <Content Include="app\templates\app\adm\atualizar_emprestimo.html" />
+    <Content Include="app\templates\app\adm\registro_emprestimo.html" />
+    <Content Include="app\templates\app\trash\cadastro_livro - Copy.html" />
+    <Content Include="app\templates\app\adm\cadastro_tombo.html" />
+    <Content Include="app\templates\app\adm\registro_livros_form.html" />
+    <Content Include="app\templates\app\trash\registro_livros.html" />
+    <Content Include="app\templates\app\trash\teste.html" />
+    <Content Include="app\templates\app\adm\cadastro_livro.html" />
+    <Content Include="app\templates\app\adm\cadastrar_usuario.html" />
     <Content Include="app\templates\app\search_books.html" />
-    <Content Include="app\templates\app\result.html" />
-    <Content Include="app\templates\app\search.html" />
-    <Content Include="app\templates\app\grafico.html" />
-    <Content Include="requirements.txt" />
-    <Content Include="db.sqlite3" />
+    <Content Include="app\templates\app\adm\result.html" />
+    <Content Include="app\templates\app\adm\search.html" />
+    <Content Include="app\templates\app\adm\grafico.html" />
+    <Content Include="app\templates\app\trash\admin_custom_links.html" />
     <Content Include="app\static\app\content\bootstrap.css" />
     <Content Include="app\static\app\content\bootstrap.min.css" />
     <Content Include="app\static\app\content\site.css" />
@@ -112,15 +129,6 @@
       <Id>env2</Id>
       <Version>3.10</Version>
       <Description>env2 (Python 3.10 (64-bit))</Description>
-      <InterpreterPath>Scripts\python.exe</InterpreterPath>
-      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
-      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
-      <Architecture>X64</Architecture>
-    </Interpreter>
-    <Interpreter Include="env\">
-      <Id>env</Id>
-      <Version>3.10</Version>
-      <Description>env (Python 3.10 (64-bit))</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>

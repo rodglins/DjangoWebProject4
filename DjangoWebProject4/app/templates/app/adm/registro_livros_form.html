@@ -1,0 +1,97 @@
+{% extends "app/adm/layout_admin.html" %}
+
+{% block content %}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tombo de Livros</title>
+</head>
+<body>
+    <h1>Tombo de Livros</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="registro_id">Selecionar Registro:</label>
+        <select name="registro_id" id="registro_id">
+            {% if registros %}
+            {% for registro in registros %}
+            <option value="{{ registro.id }}">{{ registro.titulo }}</option>
+            {% endfor %}
+            {% else %}
+            <option value="">Nenhum registro disponivel</option>
+            {% endif %}
+        </select>
+        <button type="submit" name="action" value="tombar">Tombar</button>
+    </form>
+
+    {% if selected_registro %}
+    <h2>Detalhes do Registro:</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>Titulo:</strong> {{ selected_registro.titulo }}</p>
+            <p><strong>Editora:</strong> {{ selected_registro.id_editora.nome }}</p>
+            <p><strong>Ano de Publicacao:</strong> {{ selected_registro.ano_publicacao }}</p>
+            <p><strong>Edicao:</strong> {{ selected_registro.edicao }}</p>
+            <p><strong>ISBN:</strong> {{ selected_registro.isbn }}</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong>Numero de Paginas:</strong> {{ selected_registro.numero_paginas }}</p>
+            <p><strong>Resumo:</strong> {{ selected_registro.resumo }}</p>
+            <p><strong>Notas:</strong> {{ selected_registro.notas }}</p>
+            <p><strong>Chamada:</strong> {{ selected_registro.id_chamada.chamada }}</p>
+            <p><strong>Idioma:</strong> {{ selected_registro.idioma.nome }}</p>
+        </div>
+    </div>
+
+    <h3>Autores:</h3>
+    <ul>
+        {% for autor in selected_registro.autores_registro_livros.all %}
+        <li>{{ autor.primeiro_nome }} {{ autor.nome_do_meio }} {{ autor.ultimo_nome }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Assuntos:</h3>
+    <ul>
+        {% for assunto in selected_registro.assuntos_registro_livros.all %}
+        <li>{{ assunto.descricao }}</li>
+        {% endfor %}
+    </ul>
+
+
+    {% if tombos %}
+    <h2>Tombo:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tombo</th>
+                <th>Exemplar</th>
+                <th>Data de Aquisicao</th>
+                <th>Preco</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tombo in tombos %}
+            <tr>
+                <td>{{ tombo.id }}</td>
+                <td>{{ tombo.exemplar }}</td>
+                <td>{{ tombo.data_aquisicao }}</td>
+                <td>{{ tombo.preco }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <h2>Adicionar Tombo:</h2>
+    <form method="post" action="{% url 'adicionar_tombo' %}">
+        {% csrf_token %}
+        <!-- Adicione o campo oculto para id_registro_livros_id -->
+        <input type="hidden" name="id_registro_livros_id" value="{{ selected_registro.id }}">
+        {{ form.as_p }}
+        <button type="submit">Adicionar Tombo</button>
+    </form>
+    {% endif %}
+</body>
+</html>
+{% endblock %}
