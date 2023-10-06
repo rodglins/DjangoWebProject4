@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resultado da Consulta</title>
+    <style>
+        /* Estilos para tornar a tabela responsiva */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        @media (max-width: 600px) {
+            table {
+                border: 0;
+            }
+
+            th, td {
+                border: 0;
+                display: block;
+                text-align: left;
+                width: 100%;
+            }
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Resultado da Consulta</h1>
+    
+    <!-- Formulario de pesquisa -->
+    <form id="search-form">
+        <input type="text" id="search-input" placeholder="Pesquisar">
+        <button type="button" onclick="searchResults()">Pesquisar</button>
+    </form>
+    
+    <div class="table-responsive">
+        <table>
+            <tr>
+                <th>Tombo</th>
+                <th>Autores</th>
+                <th>Titulo</th>
+                <th>Ano de Publicacao</th>
+                <th>Edicao</th>
+                <th>Editora</th>
+                <th>Chamada</th>
+                <th>Exemplar</th>
+                <th>Tipo</th>
+            </tr>
+            {% for row in results %}
+            <tr>
+                <td>{{ row.0 }}</td>
+                <td>{{ row.1 }}</td>
+                <td>{{ row.2 }}</td>
+                <td>{{ row.3 }}</td>
+                <td>{{ row.4 }}</td>
+                <td>{{ row.5 }}</td>
+                <td>{{ row.6 }}</td>
+                <td>{{ row.7 }}</td>
+                <td>{{ row.8 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <script>
+        function searchResults() {
+            var searchQuery = document.getElementById("search-input").value;
+            $.get('/search_results/?q=' + searchQuery, function(data) {
+                // Atualize a tabela com os resultados da pesquisa
+                var resultsTable = document.querySelector('table');
+                var tbody = resultsTable.querySelector('tbody');
+                tbody.innerHTML = ''; // Limpe a tabela
+                for (var i = 0; i < data.results.length; i++) {
+                    var row = data.results[i];
+                    var newRow = '<tr><td>' + row.tombo + '</td><td>' + row.autores + '</td><td>' + row.titulo + '</td><td>' + row.ano_publicacao + '</td><td>' + row.edicao + '</td><td>' + row.nome + '</td><td>' + row.chamada + '</td><td>' + row.exemplar + '</td><td>' + row.tipo + '</td></tr>';
+                    tbody.innerHTML += newRow;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

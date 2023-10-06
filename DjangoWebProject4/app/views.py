@@ -9,14 +9,17 @@ import json
 from datetime import datetime, timedelta, date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpRequest, HttpResponseBadRequest, JsonResponse, HttpResponse
-from django.db.models import Avg, Sum, Q
+from django.db import connection
+from django.db.models import Avg, Sum, Q, Max, F, Value, CharField, Case, When
+from django.db.models.functions import Concat
 from django.contrib import messages
-from .models import Book, Cidade, TipoUsuario, RegistroLivros, Autores, Tombo, Usuario, Emprestimo, TipoDeEmprestimo, StatusEmprestimo, LimiteDeLivros
+from .models import Book, Cidade, TipoUsuario, RegistroLivros, AutoresRegistroLivros, Autores, Tombo, Usuario, Emprestimo, TipoDeEmprestimo, StatusEmprestimo, LimiteDeLivros
 from .forms import UsuarioForm, ISBNForm, LivroForm, TomboForm, EmprestimoForm, UsuarioForm2
 from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidget,Select2Widget
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib.auth.models import Group
+
 
 
 
@@ -67,6 +70,7 @@ def meus_emprestimos(request):
     emprestimos = Emprestimo.objects.filter(id_usuario__email=email_do_usuario_logado)
 
     return render(request, 'app/users/meus_emprestimos.html', {'emprestimos': emprestimos})
+
 
 
 @login_required
@@ -189,6 +193,21 @@ def registro_emprestimo(request):
 
     return render(request, 'app/adm/registro_emprestimo.html', {'form': form, 'usuarios': usuarios, 'tipo_emprestimo': tipo_emprestimo})
 
+
+
+@user_passes_test(is_admin)
+def devolucao(request):
+    if request.method == "POST":
+        id_tombo = request.POST.get("id_tombo")
+        emprestimos = Emprestimo.objects.filter(id_tombo=id_tombo, status_emprestimo__in=[1, 4])
+
+        # Atualiza o status_emprestimo para 2
+        status_devolucao = StatusEmprestimo.objects.get(tipo="devolvido")
+        emprestimos.update(status_emprestimo=status_devolucao)
+
+        messages.success(request, 'Livro devolvido com sucesso!')
+
+    return render(request, "app/adm/devolucao.html")
 
 @user_passes_test(is_admin)
 def registro_livros_form(request):
@@ -370,10 +389,94 @@ def grafico(request):
     return render(request, 'app/adm/grafico.html', context)
 
 
+@user_passes_test(is_admin)
+def resultado_query(request):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+                b.id as tombo,
+                GROUP_CONCAT(CONCAT(aa2.ultimo_nome, ', ', aa2.primeiro_nome) SEPARATOR ' ; ') AS autores,
+                a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar,
+                CASE
+                    WHEN f.tipo = 'devolvido' THEN 'disponível'
+                    WHEN f.tipo = 'renovado' THEN 'emprestado'
+                    when f.tipo = 'emprestado' then 'emprestado'
+                    when f.tipo = 'atrasado' then 'emprestado'
+                    ELSE 'disponível'
+                END AS tipo
+            FROM app_registrolivros a
+            INNER JOIN app_autoresregistrolivros aa ON aa.registro_livros_id = a.id
+            INNER JOIN app_autores aa2 ON aa2.id = aa.autores_id
+            INNER JOIN app_tombo b ON a.id = b.id_registro_livros_id
+            INNER JOIN app_editora c ON a.id_editora_id = c.id
+            INNER JOIN app_classificacao d ON a.id_chamada_id = d.id
+            LEFT JOIN app_emprestimo e ON e.id_tombo_id = b.id
+            LEFT JOIN app_statusemprestimo f ON f.id = e.status_emprestimo_id
+            WHERE e.id = (
+                SELECT MAX(id)
+                FROM app_emprestimo
+                WHERE id_tombo_id = e.id_tombo_id 
+            )
+            GROUP BY b.id, a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar, f.tipo, e.data_devolucao
+            ORDER BY a.titulo
+        """)
+        results = cursor.fetchall()
+
+    context = {'results': results}
+    return render(request, 'app/adm/resultado_query.html', context)
+
 
 """
 Definition open views:
 """
+
+
+
+
+
+
+
+def search_results(request):
+    search_query = request.GET.get('q', '')
+
+    results = (
+    RegistroLivros.objects
+    .filter(titulo__icontains=search_query)
+    .annotate(
+        autores=Concat(
+            'autores_registro_livros__ultimo_nome',
+            Value(', '),
+            'autores_registro_livros__primeiro_nome',
+            output_field=CharField()
+        )
+    )
+    .values(
+        'tombo__id',
+        'autores',
+        'titulo',
+        'ano_publicacao',
+        'edicao',
+        'id_editora__nome',
+        'id_chamada__chamada',
+        'tombo__exemplar'
+    )
+    .annotate(
+        tipo=Case(
+            When(tombo__emprestimo__status_emprestimo__tipo='devolvido', then=Value('disponível')),
+            When(tombo__emprestimo__status_emprestimo__tipo='renovado', then=Value('emprestado')),
+            When(tombo__emprestimo__status_emprestimo__tipo='emprestado', then=Value('emprestado')),
+            When(tombo__emprestimo__status_emprestimo__tipo='atrasado', then=Value('emprestado')),
+            default=Value('disponível'),
+            output_field=CharField()
+        )
+    )
+    .order_by('titulo')
+)
+
+
+    return render(request, 'app/search_results.html', {'results': results})
+
+
 
 
 def search_books(request):

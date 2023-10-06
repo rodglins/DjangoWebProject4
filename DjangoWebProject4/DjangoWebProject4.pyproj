@@ -64,6 +64,11 @@
     <Content Include="app\static\app\content\select2.css" />
     <Content Include="app\static\app\scripts\jquery3.js" />
     <Content Include="app\static\app\scripts\select2full.js" />
+    <Content Include="app\templates\app\adm\devolucao.html" />
+    <Content Include="app\templates\app\resultado_query - Copy %282%29.html" />
+    <Content Include="app\templates\app\search_results.html" />
+    <Content Include="app\templates\app\search.html" />
+    <Content Include="app\templates\app\adm\resultado_query.html" />
     <Content Include="app\templates\app\users\index.html" />
     <Content Include="app\templates\app\users\layout _users.html" />
     <Content Include="app\templates\app\users\editar_cadastro.html" />

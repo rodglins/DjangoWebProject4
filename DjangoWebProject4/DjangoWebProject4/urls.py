@@ -14,6 +14,9 @@ from django_select2 import urls as select2_urls
 
 
 urlpatterns = [
+    path('search_results/', views.search_results, name='search_results'),
+    path('resultado_query/', views.resultado_query, name='resultado_query'),
+    path('devolucao/', views.devolucao, name='devolucao'),
     path('editar_cadastro/', views.editar_cadastro, name='editar_cadastro'),
     path('meus_emprestimos/', views.meus_emprestimos, name='meus_emprestimos'),
     path('admin-config/', views.admin_config_page, name='admin_config_page'),
