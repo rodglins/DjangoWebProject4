@@ -97,15 +97,15 @@ WSGI_APPLICATION = 'DjangoWebProject4.wsgi.application'
 #}
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DBNAME'),
-        'HOST': os.environ.get('DBHOST'),
-        'USER': os.environ.get('DBUSER'),
-        'PASSWORD': os.environ.get('DBPASS'),
-    }
-}
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': os.environ.get('DBNAME'),
+#        'HOST': os.environ.get('DBHOST'),
+#        'USER': os.environ.get('DBUSER'),
+#        'PASSWORD': os.environ.get('DBPASS'),
+#    }
+#}
 
 
 # Password validation
