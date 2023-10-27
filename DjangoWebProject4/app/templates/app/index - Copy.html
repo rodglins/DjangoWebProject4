@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+{% extends "app/layout.html" %}
+
+<head>
+    <meta charset="utf-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Django Library Application</title>
+    {% load static %}
+  
+    <link rel="stylesheet" type="text/css" href="{% static 'app/content/site.css' %}" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.4.0.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <script src="{% static 'app/scripts/modernizr-2.6.2.js' %}"></script>
+
+
+    {% block script %}
+    <script>
+        // Inicialize o Select2 para o campo de autores
+        $(document).ready(function () {
+            $('.select2').select2({
+                // Adicione quaisquer opcoes de configuracao necessarias aqui
+            });
+        });
+
+        function increaseFont() {
+            document.body.style.fontSize = '1.2em';
+            }
+        function decreaseFont() {
+            document.body.style.fontSize = '1em';
+            }
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            }
+    </script>
+    {% endblock %}
+</head>
+
+{% block content %}
+
+                        <button id="increase-font" onclick="increaseFont()">+</button>
+                        <button id="decrease-font" onclick="decreaseFont()">-</button>
+                        <button id="high-contrast" onclick="toggleHighContrast()">Contraste</button>
+
+
+{% if user.is_authenticated %}
+    <script>
+        window.location.href = "{% url 'redirecionar_apos_login' %}";
+    </script>
+{% endif %}
+
+
+<div class="jumbotron">
+    <h1>Biblioteca Facil</h1>
+    <p class="lead">Este e o site da sua Biblioteca, faca pesquisas e encontre os servicos oferecidos.</p>
+    <p><a href="/" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Solicitar um servico</h2>
+        <p>
+            Solicite um servico ao Bibliotecario.
+        </p>
+        <p><a class="btn btn-default" href="/search/">Learn more;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Pesquise seus livros</h2>
+        <p>Faca busca na base de dados.</p>
+        <p><a class="btn btn-default" href="/search_books/">Learn more;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Registro ABNT</h2>
+        <p>Gere a referencia do seu livro no formato ABNT.</p>
+        <p><a class="btn btn-default" href="http://azure.microsoft.com">Learn more &raquo;</a></p>
+    </div>
+</div>
+
+{% endblock %}
+
+</html>

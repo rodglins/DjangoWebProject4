@@ -56,21 +56,33 @@
     <Folder Include="app\templates\" />
     <Folder Include="app\templates\app\" />
     <Folder Include="app\templates\app\adm\" />
+    <Folder Include="app\templates\app\adm\editora\" />
     <Folder Include="app\templates\app\trash\" />
     <Folder Include="app\templates\app\users\" />
     <Folder Include="DjangoWebProject4\" />
+    <Folder Include="Properties\" />
+    <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="app\static\app\content\select2.css" />
+    <Content Include="app\static\app\scripts\editora.js" />
     <Content Include="app\static\app\scripts\jquery3.js" />
     <Content Include="app\static\app\scripts\select2full.js" />
+    <Content Include="app\templates\app\adm\editora\editora_list.html" />
+    <Content Include="app\templates\app\adm\editora\editora_form.html" />
+    <Content Include="app\templates\app\adm\editora\base.html" />
+    <Content Include="app\templates\app\users\contact.html" />
+    <Content Include="app\templates\app\users\about.html" />
     <Content Include="app\templates\app\adm\devolucao.html" />
+    <Content Include="app\templates\app\index - Copy.html" />
     <Content Include="app\templates\app\resultado_query - Copy %282%29.html" />
+    <Content Include="app\templates\app\users\search_results.html" />
+    <Content Include="app\templates\app\adm\search_results.html" />
     <Content Include="app\templates\app\search_results.html" />
     <Content Include="app\templates\app\search.html" />
     <Content Include="app\templates\app\adm\resultado_query.html" />
     <Content Include="app\templates\app\users\index.html" />
-    <Content Include="app\templates\app\users\layout _users.html" />
+    <Content Include="app\templates\app\users\layout_users.html" />
     <Content Include="app\templates\app\users\editar_cadastro.html" />
     <Content Include="app\templates\app\users\meus_emprestimos.html" />
     <Content Include="app\templates\app\adm\admin_config_page.html" />
@@ -123,6 +135,8 @@
     <Content Include="app\templates\app\layout.html" />
     <Content Include="app\templates\app\login.html" />
     <Content Include="app\templates\app\loginpartial.html" />
+    <None Include="Properties\PublishProfiles\DjangoWebProject420231025205052 - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\catalogouab - Web Deploy.pubxml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="readme.html">

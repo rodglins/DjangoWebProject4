@@ -1,0 +1,40 @@
+
+{% extends 'app/adm/editora/base.html' %}
+
+
+{% block content %}
+
+<h2>Lista de Editoras</h2>
+
+<a href="{% url 'editora-create' %}" class="btn btn-primary">Adicionar Editora</a>
+
+
+
+
+<form id="editora-form" method="post">
+    {% csrf_token %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Cidade</th>
+                <th>Ano de Fundação</th>
+                <th>Editar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for editora in editoras %}
+            <tr>
+                <td>{{ editora.nome }}</td>
+                <td>{{ editora.cidade.nome }}</td>
+                <td>{{ editora.ano_fundacao }}</td>
+                <td>
+                    <a href="{% url 'editora-edit' editora.id %}" class="btn btn-primary">Editar Editora</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</form>
+
+{% endblock %}

@@ -1,0 +1,44 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiple Select</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.0.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+</head>
+<body>
+
+
+
+
+
+<div class="container">
+
+    <h1 class="mt-4">Multiple Select Example</h1>
+    <div class="form-group">
+        <label for="multipleSelectExample">Select an option:</label>
+        <select class="form-control" id="multipleSelectExample" data-placeholder="Select an option" multiple>
+            <option value="1">Option 1111111 11111111111</option>
+            <option value="2">Option 22222222 22222</option>
+            <option value="3">Option 2222333333</option>
+            <option value="4">Option 44444</option>
+            <option value="5">Option 555 555 55</option>
+        </select>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#multipleSelectExample').select2();
+    });
+</script>
+</body>
+</html>
+
+
+
+
+

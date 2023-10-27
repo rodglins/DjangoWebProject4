@@ -1,0 +1,53 @@
+
+
+{% extends "app/adm/layout_admin.html" %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Detalhes do Registro</title>
+</head>
+<body>
+
+{% block content %}
+    <h1>Detalhes do Registro</h1>
+
+    {% if registro %}
+    <h2>Registro Selecionado:</h2>
+    <p>Titulo: {{ registro.titulo }}</p>
+    <!-- Adicione mais campos aqui -->
+    {% if tombos %}
+    <h2>Tombo:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Exemplar</th>
+                <th>Data de Aquisição</th>
+                <th>Preço</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tombo in tombos %}
+            <tr>
+                <td>{{ tombo.exemplar }}</td>
+                <td>{{ tombo.data_aquisicao }}</td>
+                <td>{{ tombo.preco }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nenhum tombo encontrado para este registro.</p>
+    {% endif %}
+
+    <h2>Adicionar Tombo:</h2>
+    <form method="post" action="{% url 'adicionar_tombo' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Adicionar Tombo</button>
+    </form>
+    {% endif %}
+
+{% endblock %}
+
+</body>
+</html>
