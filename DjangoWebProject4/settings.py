@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import posixpath
 from django.db.models import BigAutoField
+from .production import DATABASES
+
+# Outras configurações gerais do projeto
+
 
 # Configure o DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
