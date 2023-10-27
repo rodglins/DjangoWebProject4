@@ -17,13 +17,12 @@ https://docs.djangoproject.com/en/2.1/howto/deployment/wsgi/
 """
 
 import os
+
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault(
-    'DJANGO_SETTINGS_MODULE',
-    'DjangoWebProject4.settings')
+# Check for the WEBSITE_HOSTNAME environment variable to see if we are running in Azure Ap Service
+# If so, then load the settings from production.py
+settings_module = 'DjangoWebProject4.production' if 'WEBSITE_HOSTNAME' in os.environ else 'DjangoWebProject4.settings'
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
 
-# This application object is used by any WSGI server configured to use this
-# file. This includes Django's development server, if the WSGI_APPLICATION
-# setting points here.
 application = get_wsgi_application()
