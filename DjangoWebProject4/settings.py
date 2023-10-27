@@ -32,7 +32,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '6a0e2ab0-3335-4954-9e25-20990b2d1508'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -96,17 +96,14 @@ WSGI_APPLICATION = 'DjangoWebProject4.wsgi.application'
 #    }
 #}
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',  # Usamos o backend MySQL
-        'NAME': 'library',          # Nome do banco de dados
-        'USER': 'root',                 # Nome de usuário do banco de dados
-        'PASSWORD': 'pi2023g13',              # Senha do banco de dados
-        'HOST': 'localhost',                  # Host onde o banco de dados está sendo executado (geralmente 'localhost')
-        'PORT': '3306',
-        'OPTIONS': {
-            'charset': 'utf8mb4',  # Use 'utf8mb4' para suportar emojis e caracteres especiais
-        }
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DBNAME'),
+        'HOST': os.environ.get('DBHOST'),
+        'USER': os.environ.get('DBUSER'),
+        'PASSWORD': os.environ.get('DBPASS'),
     }
 }
 
