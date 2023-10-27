@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import posixpath
 from django.db.models import BigAutoField
-from .production import DATABASES
+from .database import DATABASES
 
 # Outras configurações gerais do projeto
 
