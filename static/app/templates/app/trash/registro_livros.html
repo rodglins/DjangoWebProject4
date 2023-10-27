@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registro de Livros</title>
+</head>
+<body>
+    <h1>Registro de Livros</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="registro_id">Selecionar Registro:</label>
+        <select name="registro_id" id="registro_id">
+            {% for registro in registros %}
+            <option value="{{ registro.id }}">{{ registro.titulo }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Selecionar</button>
+    </form>
+    {% if registro %}
+    <h2>Detalhes do Registro:</h2>
+    <p>Titulo: {{ registro.titulo }}</p>
+    <!-- Adicione mais campos aqui -->
+    <h2>Tombo:</h2>
+    <ul>
+        {% for tombo in tombos %}
+        <li>{{ tombo }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Adicionar Tombo:</h2>
+    <form method="post" action="{% url 'adicionar_tombo' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Adicionar Tombo</button>
+    </form>
+    {% endif %}
+</body>
+</html>

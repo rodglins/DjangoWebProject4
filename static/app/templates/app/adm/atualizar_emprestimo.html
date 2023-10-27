@@ -1,0 +1,63 @@
+{% extends "app/adm/layout_admin.html" %}
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Inclua aqui seus estilos e scripts -->
+</head>
+<body>
+    {% block content %}
+    <h1>Atualizar Empréstimo</h1>
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Seleção de Usuário -->
+        <label for="id_usuario">Usuário:</label>
+        <select name="id_usuario" id="id_usuario">
+            <option value="" disabled selected>Escolha um usuário</option>
+            {% for usuario in usuarios %}
+            <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+            {% endfor %}
+        </select><br>
+
+
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+  $(document).ready(function () {
+    $('#id_usuario').on('change', function () {
+      var selectedUserId = $(this).val();
+
+      // Faça uma chamada AJAX para buscar os empréstimos do usuário
+      $.ajax({
+        url: '/get-emprestimos/' + selectedUserId + '/',
+        type: 'GET',
+        success: function (data) {
+          $('#id_emprestimo').empty();
+          $('#id_emprestimo').append('<option value="" disabled selected>Escolha um empréstimo</option>');
+
+          for (var i = 0; i < data.emprestimos.length; i++) {
+            $('#id_emprestimo').append('<option value="' + data.emprestimos[i].id + '">' + data.emprestimos[i].id + '</option>');
+          }
+        },
+        error: function () {
+          console.error('Erro ao buscar os empréstimos.');
+        }
+      });
+    });
+  });
+        </script>
+
+
+
+
+        <!-- Lista de Empréstimos com status 1 para o usuário selecionado -->
+        <label for="id_emprestimo">Empréstimo:</label>
+        <select name="id_emprestimo" id="id_emprestimo">
+            <option value="" disabled selected>Escolha um empréstimo</option>
+        </select><br>
+
+        <button type="submit">Atualizar Empréstimo</button>
+    </form>
+    {% endblock %}
+</body>
+</html>

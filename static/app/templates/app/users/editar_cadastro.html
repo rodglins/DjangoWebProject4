@@ -1,0 +1,45 @@
+
+
+{% extends "app/users/layout_users.html" %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Editar Cadastro</title>
+    <!-- Inclua os arquivos CSS do Bootstrap aqui -->
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Editar Cadastro</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.nome.id_for_label }}">Nome:</label>
+                {{ form.nome }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.cpf.id_for_label }}">CPF:</label>
+                {{ form.cpf }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.rua.id_for_label }}">Rua:</label>
+                {{ form.rua }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.id_cidade.id_for_label }}">Cidade:</label>
+                {{ form.id_cidade }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.telefone.id_for_label }}">Telefone:</label>
+                {{ form.telefone }}
+            </div>
+            <button type="submit" class="btn btn-primary">Salvar Alteracoes</button>
+        </form>
+    </div>
+</body>
+</html>
+
+
+{% endblock %}

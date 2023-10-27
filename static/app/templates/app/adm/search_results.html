@@ -1,0 +1,116 @@
+{% extends "app/adm/layout_admin.html" %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resultado da Consulta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #333;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background-color: #555;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Consulta livros</h1>
+
+        <form method="GET" action="{% url 'search_results' %}">
+            <input type="text" name="q" placeholder="Pesquisar" value="{{ request.GET.q }}">
+            <button type="submit">Pesquisar</button>
+        </form>
+
+        <table>
+            <tr>
+                <th>Autores</th>
+                <th>Titulo</th>
+                <th>Ano de Publicacao</th>
+                <th>Edicao</th>
+                <th>Editora</th>
+                <th>Chamada</th>
+                <th>Tipo</th>
+            </tr>
+            {% for result in results %}
+            <tr>
+                <td>{{ result.autores }}</td>
+                <td>{{ result.titulo }}</td>
+                <td>{{ result.ano_publicacao }}</td>
+                <td>{{ result.edicao }}</td>
+                <td>{{ result.id_editora__nome }}</td>
+                <td>{{ result.id_chamada__chamada }}</td>
+                <td>{{ result.tipo }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">Nenhum resultado encontrado.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+{% endblock %}

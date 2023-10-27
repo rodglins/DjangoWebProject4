@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Library Application</title>
+    {% load static %}
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.0.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+
+    {% block script %}
+    <script>
+        // Inicialize o Select2 para o campo de autores
+        $(document).ready(function () {
+            $('.select2').select2({
+                // Adicione quaisquer opcoes de configuracao necessarias aqui
+            });
+        });
+    </script>
+{% endblock %}
+
+</head>
+
+
+<div class="container">
+    <h1 class="mt-4">Cadastro de Livros</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Cadastrar</button>
+    </form>
+</div>
+
+
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+
+
+
+<script>
+    $(document).ready(function () {
+        // Inicialize o Select2 para o campo de autor inicial
+        $('.select2').select2();
+
+        // Adicionar campo de autor dinamicamente
+        $('#adicionar-autor').click(function () {
+            var novoCampo = '<div class="autores-input"><label for="autores">Autores:</label><select multiple name="autores_personalizados[]" class="select2" data-placeholder="Pesquisar autores" data-minimum-input-length="2"></select></div>';
+            $('#autores-container').append(novoCampo);
+
+            // Inicialize o Select2 para o novo campo de autor
+            $('.select2').last().select2();
+        });
+    });
+
+
+
+    $(document).ready(function () {
+        // Inicialize o Select2 para o campo de autor inicial
+        $('.select2').select2();
+
+        // Contador para gerar IDs únicos para os campos adicionados
+        var autorCounter = 1;
+
+        // Adicionar campo de autor dinamicamente
+        $('#adicionar-autor').click(function () {
+            var novoCampo = '<div class="autores-input"><label for="autores">Autores:</label><select multiple name="autores_personalizados_' + autorCounter + '" class="select2" data-placeholder="Pesquisar autores" data-minimum-input-length="2"></select></div>';
+            $('#autores-container').append(novoCampo);
+
+            // Inicialize o Select2 para o novo campo de autor
+            $('.select2').last().select2();
+
+            autorCounter++;
+        });
+    });
+
+</script>
+
+
+
+
+    <div class="container body-content">
+{% block content %}{% endblock %}
+        <hr/>
+        <footer>
+            <p>&copy; {{ 2023 }} - My Django Application</p>
+        </footer>
+    </div>
+
+
+</body>
+</html>
+
+
+

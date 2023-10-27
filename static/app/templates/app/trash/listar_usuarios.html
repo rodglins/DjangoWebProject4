@@ -1,0 +1,25 @@
+
+{% extends "app/layout.html" %}
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Inclua aqui seus estilos e scripts -->
+</head>
+
+{% block content %}
+
+<body>
+    <h1>Listagem de Usuários</h1>
+    <ul>
+        {% for usuario in usuarios %}
+            <li><a href="{% url 'listar_emprestimos_usuario' usuario.id %}">{{ usuario.nome }}</a></li>
+        {% endfor %}
+    </ul>
+
+
+
+
+{% endblock %}
+
+</body>
+</html>

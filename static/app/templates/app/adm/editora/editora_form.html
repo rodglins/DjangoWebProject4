@@ -1,0 +1,36 @@
+{% extends 'app/adm/editora/base.html' %}
+
+{% block content %}
+<h2>Formulário de Editora</h2>
+
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="{{ form.nome.id_for_label }}">Nome:</label>
+        {{ form.nome }}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.ano_fundacao.id_for_label }}">Ano de Fundação:</label>
+        {{ form.ano_fundacao }}
+    </div>
+
+    <div class="form-group">
+        <label for="{{ form.cidade.id_for_label }}" class="mr-2">Cidade:</label>
+        <select name="{{ form.cidade.name }}" class="form-control d-inline mr-2">
+            <option value="" {% if not form.cidade.value %} selected{% endif %}>---------</option>
+            {% for cidade in form.cidade.field.queryset %}
+            <option value="{{ cidade.nome }}" {% if form.cidade.value == cidade.nome %} selected{% endif %}>{{ cidade.nome }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+
+
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a href="{% url 'editora-list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}
+
+

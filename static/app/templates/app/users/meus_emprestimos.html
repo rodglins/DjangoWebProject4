@@ -1,0 +1,48 @@
+
+
+{% extends "app/users/layout_users.html" %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meus Emprestimos</title>
+    <!-- Inclua os arquivos CSS e JS do Bootstrap aqui -->
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Meus Emprestimos</h1>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Titulo</th>
+                        <th>Tombo</th>
+                        <th>Exemplar</th>
+                        <th>Tipo de Emprestimo</th>
+                        <th>Status</th>
+                        <th>Data de Emprestimo</th>
+                        <th>Data de Devolucao</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emprestimo in emprestimos %}
+                    <tr>
+                        <td>{{ emprestimo.id_tombo.id_registro_livros.titulo }}</td>
+                        <td>{{ emprestimo.id_tombo.id }}</td>
+                        <td>{{ emprestimo.id_tombo.exemplar }}</td>
+                        <td>{{ emprestimo.id_tipos_de_emprestimos.tipo }}</td>
+                        <td>{{ emprestimo.status_emprestimo.tipo }}</td>
+                        <td>{{ emprestimo.data_emprestimo }}</td>
+                        <td>{{ emprestimo.data_devolucao }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
+
+{% endblock %}

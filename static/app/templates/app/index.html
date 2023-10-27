@@ -1,0 +1,41 @@
+
+
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+
+{% if user.is_authenticated %}
+<script>
+    window.location.href = "{% url 'redirecionar_apos_login' %}";
+</script>
+{% endif %}
+
+<div class="jumbotron">
+    <h1>Biblioteca Fácil</h1>
+    <p class="lead">Este é o site da sua Biblioteca, faça pesquisas e encontre os serviços oferecidos.</p>
+    <p><a href="/" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Solicitar um serviço</h2>
+        <p>
+            Solicite um serviço ao Bibliotecário.
+        </p>
+        <p><a class="btn btn-default" href="/search/">Learn more;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Pesquise seus livros</h2>
+        <p>Faça busca na base de dados.</p>
+        <p><a class="btn btn-default" href="/search_books/">Learn more;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Registro ABNT</h2>
+        <p>Gere a referência do seu livro no formato ABNT.</p>
+        <p><a class="btn btn-default" href="http://azure.microsoft.com">Learn more &raquo;</a></p>
+    </div>
+</div>
+
+{% endblock %}
+

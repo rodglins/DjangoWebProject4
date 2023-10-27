@@ -1,0 +1,32 @@
+{% extends "app/adm/layout_admin.html" %}
+
+{% block content %}
+
+
+<div class="jumbotron">
+    <h1>Admin Biblioteca Facil</h1>
+    <p class="lead">Gerencie a base de dados com os registros dos seus livros.</p>
+    <p><a href="/" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Grave registros</h2>
+        <p>
+            Area administrativa do Django
+        </p>
+        <p><a class="btn btn-default" href="/search/">Learn more &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Cadastrre livros</h2>
+        <p>Faca busca na sua base de dados.</p>
+        <p><a class="btn btn-default" href="/search_books/">Learn more &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Registro ABNT</h2>
+        <p>Gere a referencia do seu livro no formato ABNT.</p>
+        <p><a class="btn btn-default" href="http://azure.microsoft.com">Learn more &raquo;</a></p>
+    </div>
+</div>
+
+{% endblock %}

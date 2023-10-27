@@ -1,0 +1,13 @@
+{% extends "app/adm/layout_admin.html" %}
+
+{% block content %}
+
+    <h1>Gravar por ISBN</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.isbn.label_tag }} {{ form.isbn }}
+        <button type="submit">Search</button>
+    </form>
+
+
+{% endblock %}

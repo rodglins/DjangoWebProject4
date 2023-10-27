@@ -1,0 +1,17 @@
+{% extends "app/adm/layout_admin.html" %}
+
+{% block content %}
+
+    <h1>Result</h1>
+    <p>ISBN: {{ book.isbn }}</p>
+    <p>Livro gravado com sucesso:</p>
+
+    <button onclick="goBack()">Voltar</button>
+
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+ 
+{% endblock %}
