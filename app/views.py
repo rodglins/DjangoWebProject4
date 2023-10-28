@@ -464,13 +464,13 @@ def resultado_query(request):
         cursor.execute("""
             SELECT
                 b.id as tombo,
-                GROUP_CONCAT(CONCAT(aa2.ultimo_nome, ', ', aa2.primeiro_nome) SEPARATOR ' ; ') AS autores,
+                STRING_AGG(CONCAT(aa2.ultimo_nome, ', ', aa2.primeiro_nome), ' ; ') AS autores,
                 a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar,
                 CASE
                     WHEN f.tipo = 'devolvido' THEN 'disponível'
                     WHEN f.tipo = 'renovado' THEN 'emprestado'
-                    when f.tipo = 'emprestado' then 'emprestado'
-                    when f.tipo = 'atrasado' then 'emprestado'
+                    WHEN f.tipo = 'emprestado' THEN 'emprestado'
+                    WHEN f.tipo = 'atrasado' THEN 'emprestado'
                     ELSE 'disponível'
                 END AS tipo
             FROM app_registrolivros a
