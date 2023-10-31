@@ -15,13 +15,15 @@ from django.db.models import Avg, Sum, Q, Max, F, Value, CharField, Case, When
 from django.db.models.functions import Concat
 from django.contrib import messages
 from .models import Book, Cidade, TipoUsuario, RegistroLivros, AutoresRegistroLivros, Autores, Tombo, Usuario, Emprestimo, TipoDeEmprestimo, StatusEmprestimo, LimiteDeLivros, Editora
-from .forms import UsuarioForm, ISBNForm, LivroForm, TomboForm, EmprestimoForm, UsuarioForm2, EditoraForm
+from .forms import UsuarioForm, ISBNForm, LivroForm, TomboForm, EmprestimoForm, UsuarioForm2, EditoraForm, AutoresForm
 from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidget,Select2Widget
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib.auth.models import Group
 from django.views.generic import View, ListView, CreateView, UpdateView
 from django.urls import reverse_lazy
+
+
 
 
 """
@@ -528,6 +530,33 @@ def editora_edit(request, editora_id):
     else:
         form = EditoraForm(instance=editora)
     return render(request, 'app/adm/editora/editora_form.html', {'form': form})
+
+
+
+
+
+
+
+
+def criar_autor(request):
+    if request.method == 'POST':
+        form = AutoresForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # Redirecionar ou fazer qualquer outra ação após o salvamento do autor.
+    else:
+        form = AutoresForm()
+
+    return render(request, 'app/adm/criar_autor.html', {'form': form})
+
+
+
+
+
+
+
+
+
 
 """
 Definition open views:

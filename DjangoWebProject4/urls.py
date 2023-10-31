@@ -12,6 +12,7 @@ from django.conf.urls.static import static
 from django_select2 import urls as select2_urls
 
 urlpatterns = [
+    path('criar_autor/', views.criar_autor, name='criar_autor'),
     path('editoras/', views.editora_list, name='editora-list'),
     path('editoras/create/', views.editora_create, name='editora-create'),
     path('editoras/edit/<int:editora_id>/', views.editora_edit, name='editora-edit'),

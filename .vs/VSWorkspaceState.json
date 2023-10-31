@@ -2,8 +2,6 @@
   "ExpandedNodes": [
     "",
     "\\app",
-    "\\app\\templates",
-    "\\app\\templates\\app",
     "\\DjangoWebProject4"
   ],
   "SelectedNode": "\\DjangoWebProject4\\settings.py",

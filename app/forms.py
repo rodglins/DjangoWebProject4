@@ -26,6 +26,13 @@ Definition of forms admin:
 
 
 
+class AutoresForm(forms.ModelForm):
+    class Meta:
+        model = Autores
+        fields = '__all__'
+
+
+
 class EditoraForm(forms.ModelForm):
     class Meta:
         model = Editora
@@ -40,7 +47,6 @@ class EditoraForm(forms.ModelForm):
     ano_fundacao = forms.DateField(
         required=False,  # Torna o campo ano_fundacao opcional
     )
-
 
 
 
