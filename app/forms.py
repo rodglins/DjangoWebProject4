@@ -26,10 +26,24 @@ Definition of forms admin:
 
 
 
+
+
 class AutoresForm(forms.ModelForm):
     class Meta:
         model = Autores
         fields = '__all__'
+        widgets = {
+            'data_nascimento': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(AutoresForm, self).__init__(*args, **kwargs)
+        # Defina os campos como não obrigatórios (opcionais)
+        self.fields['nome_do_meio'].required = False
+        self.fields['id_cidade'].required = False
+        self.fields['data_nascimento'].required = False
+
+
 
 
 
