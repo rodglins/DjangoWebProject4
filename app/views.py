@@ -581,9 +581,9 @@ def search_results(request):
     )
     .annotate(
         autores=Concat(
-            F('autores_registro_livros__autores__primeiro_nome'),
+            'autores_registro_livros__autores__primeiro_nome',
             Value(' '),
-            F('autores_registro_livros__autores__ultimo_nome'),
+            'autores_registro_livros__autores__ultimo_nome',
             output_field=CharField()
         )
     )
@@ -613,7 +613,7 @@ def search_results(request):
 
     if search_query:
         results = results.filter(
-            Q(id_chamada__assunto__descricao__icontains=search_query)
+            Q(id_chamada__assunto__assunto__descricao__icontains=search_query)
         )
     
     if is_admin(request.user):
