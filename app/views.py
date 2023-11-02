@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpRequest, HttpResponseBadRequest, JsonResponse, HttpResponse
 from django.db import connection
-from django.db.models import Avg, Sum, Q, Max, F, Value, CharField, Case, When, Subquery
+from django.db.models import Avg, Sum, Q, Max, F, Value, CharField, Case, When, Subquery, OuterRef
 from django.db.models.functions import Concat
 from django.contrib import messages
 from .models import Book, Cidade, TipoUsuario, RegistroLivros, AutoresRegistroLivros, Autores, Tombo, Usuario, Emprestimo, TipoDeEmprestimo, StatusEmprestimo, LimiteDeLivros, Editora
@@ -586,10 +586,6 @@ def search_results(request):
             F('autores_registro_livros__autores__ultimo_nome'),
             output_field=CharField()
         ),
-        assunto=Concat(
-            F('id_chamada__assunto__descricao'),
-            output_field=CharField()
-        )
     )
     .values(
         'tombo__id',
@@ -600,7 +596,7 @@ def search_results(request):
         'id_editora__nome',
         'id_chamada__chamada',
         'tombo__exemplar',
-        'assunto'
+        'id_chamada__assunto__descricao'  # Buscamos o campo de descrição diretamente
     )
 
     .annotate(
@@ -618,9 +614,9 @@ def search_results(request):
 
     if search_query:
         results = results.filter(
-            Q(assunto__icontains=search_query)
+            Q(id_chamada__assunto__descricao__icontains=search_query)
         )
-        
+
     if is_admin(request.user):
         return render(request, 'app/adm/search_results.html', {'results': results})
     elif is_users(request.user):
