@@ -72,12 +72,18 @@
 <body>
     <div class="container">
         <h1>Consulta livros</h1>
-        
+
         <form method="GET" action="{% url 'search_results' %}">
-            <input type="text" name="q" placeholder="Pesquisar" value="{{ request.GET.q }}">
-            <button type="submit">Pesquisar</button>
-        </form>
-        
+    <input type="text" name="q" placeholder="Pesquisar" value="{{ request.GET.q }}">
+    <select name="campo">
+        <option value="titulo">Título</option>
+        <option value="assunto">Assunto</option>
+        <option value="autores">Autores</option>
+        <option value="descricao">Descrição</option>
+    </select>
+    <button type="submit">Pesquisar</button>
+    </form>
+
         <table>
             <tr>
                 <th>Autores</th>

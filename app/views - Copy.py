@@ -570,18 +570,12 @@ def search_results(request):
 
     results = (
     RegistroLivros.objects
-    .filter(
-        Q(titulo__icontains=search_query) |
-        Q(id_chamada__assunto__icontains=search_query) |
-        Q(autores_registro_livros__autores__ultimo_nome__icontains=search_query) |
-        Q(autores_registro_livros__autores__primeiro_nome__icontains=search_query) |
-        Q(assuntos_registro_livros__assunto__descricao__icontains=search_query)
-    )
+    .filter(titulo__icontains=search_query)
     .annotate(
         autores=Concat(
-            'autores_registro_livros__autores__ultimo_nome',
+            'autores_registro_livros__ultimo_nome',
             Value(', '),
-            'autores_registro_livros__autores__primeiro_nome',
+            'autores_registro_livros__primeiro_nome',
             output_field=CharField()
         )
     )
