@@ -568,34 +568,25 @@ Definition open views:
 def search_results(request):
     search_query = request.GET.get('q', '')
 
-    autores_subquery = Autores.objects.filter(
-        Q(ultimo_nome__icontains=search_query) | Q(primeiro_nome__icontains=search_query)
-    ).values(
-        'registro_livros__id'
-    )
+    autores_subquery = AutoresRegistroLivros.objects.filter(
+        Q(autores__ultimo_nome__icontains=search_query) |
+        Q(autores__primeiro_nome__icontains=search_query)
+    ).values('registro_livros')
 
     results = (
     RegistroLivros.objects
     .filter(
         Q(titulo__icontains=search_query) |
         Q(id_chamada__assunto__icontains=search_query) |
-        Q(assuntos_registro_livros__assunto__descricao__icontains=search_query) |
-        Q(id__in=Subquery(autores_subquery))
+        Q(id__in=Subquery(autores_subquery)) |
+        Q(assuntos_registro_livros__assunto__descricao__icontains=search_query)
     )
     .annotate(
-        autores=Subquery(
-            Autores.objects
-            .filter(registro_livros=OuterRef('pk'))
-            .values('registro_livros__id')
-            .annotate(
-                autores_concat=Concat(
-                    'primeiro_nome',
-                    Value(' '),
-                    'ultimo_nome',
-                    output_field=CharField()
-                )
-            )
-            .values_list('autores_concat', flat=True)[:1]
+        autores=Concat(
+            F('autores_registro_livros__autores__primeiro_nome'),
+            Value(' '),
+            F('autores_registro_livros__autores__ultimo_nome'),
+            output_field=CharField()
         )
     )
     .values(
