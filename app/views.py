@@ -577,9 +577,7 @@ def search_results(request):
     RegistroLivros.objects
     .filter(
         Q(titulo__icontains=search_query) |
-        Q(id_chamada__assunto__icontains=search_query) |
-        Q(id__in=Subquery(autores_subquery)) |
-        Q(assuntos_registro_livros__assunto__descricao__icontains=search_query)
+        Q(id__in=Subquery(autores_subquery))
     )
     .annotate(
         autores=Concat(
@@ -613,6 +611,10 @@ def search_results(request):
     .order_by('titulo')
 )
 
+    if search_query:
+        results = results.filter(
+            Q(id_chamada__assunto__descricao__icontains=search_query)
+        )
     
     if is_admin(request.user):
         return render(request, 'app/adm/search_results.html', {'results': results})
