@@ -14,7 +14,7 @@ from django.db import connection
 from django.db.models import Avg, Sum, Q, Max, F, Value, CharField, Case, When, Subquery, OuterRef
 from django.db.models.functions import Concat
 from django.contrib import messages
-from .models import Book, Cidade, TipoUsuario, RegistroLivros, AutoresRegistroLivros, Autores, Tombo, Usuario, Emprestimo, TipoDeEmprestimo, StatusEmprestimo, LimiteDeLivros, Editora
+from .models import Book, Cidade, TipoUsuario, RegistroLivros, AutoresRegistroLivros, Autores, Tombo, Usuario, Emprestimo, TipoDeEmprestimo, StatusEmprestimo, LimiteDeLivros, Editora, AssuntosRegistroLivros
 from .forms import UsuarioForm, ISBNForm, LivroForm, TomboForm, EmprestimoForm, UsuarioForm2, EditoraForm, AutoresForm
 from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidget,Select2Widget
 from django.utils import timezone
@@ -621,7 +621,6 @@ def search_results(request):
         return render(request, 'app/users/search_results.html', {'results': results})
     else:
         return render(request, 'app/search_results.html', {'results': results})
-
 
 
 
