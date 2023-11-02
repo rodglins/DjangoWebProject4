@@ -565,6 +565,14 @@ Definition open views:
 
 
 
+from django.db.models import Q, F, CharField, Value
+from django.db.models.functions import Concat
+from django.db.models import Subquery, OuterRef
+from django.db.models import Case, When
+
+# Importe o modelo AssuntosRegistroLivros aqui
+from .models import AssuntosRegistroLivros
+
 def search_results(request):
     search_query = request.GET.get('q', '')
 
@@ -576,7 +584,6 @@ def search_results(request):
         RegistroLivros.objects
         .filter(
             Q(titulo__icontains=search_query) |
-            Q(id_chamada__assunto__descricao__icontains=search_query) |
             Q(id__in=Subquery(autores_subquery))
         )
         .annotate(
@@ -595,7 +602,7 @@ def search_results(request):
             'edicao',
             'id_editora__nome',
             'id_chamada__chamada',
-            'tombo__exemplar'
+            'tombo__exemplar',
         )
         .annotate(
             tipo=Case(
@@ -609,11 +616,6 @@ def search_results(request):
         )
         .order_by('titulo')
     )
-
-    if search_query:
-        results = results.filter(
-            Q(id_chamada__assunto__descricao__icontains=search_query)
-        )
 
     if is_admin(request.user):
         return render(request, 'app/adm/search_results.html', {'results': results})
