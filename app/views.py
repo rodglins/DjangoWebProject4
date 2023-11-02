@@ -581,9 +581,13 @@ def search_results(request):
     )
     .annotate(
         autores=Concat(
-            'autores_registro_livros__autores__primeiro_nome',
+            F('autores_registro_livros__autores__primeiro_nome'),
             Value(' '),
-            'autores_registro_livros__autores__ultimo_nome',
+            F('autores_registro_livros__autores__ultimo_nome'),
+            output_field=CharField()
+        ),
+        assunto=Concat(
+            F('id_chamada__assunto__descricao'),
             output_field=CharField()
         )
     )
@@ -595,7 +599,8 @@ def search_results(request):
         'edicao',
         'id_editora__nome',
         'id_chamada__chamada',
-        'tombo__exemplar'
+        'tombo__exemplar',
+        'assunto'
     )
 
     .annotate(
@@ -613,9 +618,9 @@ def search_results(request):
 
     if search_query:
         results = results.filter(
-            Q(id_chamada__assunto__assunto__descricao__icontains=search_query)
+            Q(assunto__icontains=search_query)
         )
-    
+        
     if is_admin(request.user):
         return render(request, 'app/adm/search_results.html', {'results': results})
     elif is_users(request.user):
