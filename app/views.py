@@ -568,49 +568,47 @@ Definition open views:
 def search_results(request):
     search_query = request.GET.get('q', '')
 
-    autores_subquery = AutoresRegistroLivros.objects.filter(
-        Q(autores__ultimo_nome__icontains=search_query) |
-        Q(autores__primeiro_nome__icontains=search_query)
+    autores_subquery = AssuntosRegistroLivros.objects.filter(
+        Q(assunto__descricao__icontains=search_query)
     ).values('registro_livros__id')
 
     results = (
-    RegistroLivros.objects
-    .filter(
-        Q(titulo__icontains=search_query) |
-        Q(id__in=Subquery(autores_subquery))
-    )
-    .annotate(
-        autores=Concat(
-            F('autores_registro_livros__autores__primeiro_nome'),
-            Value(' '),
-            F('autores_registro_livros__autores__ultimo_nome'),
-            output_field=CharField()
-        ),
-    )
-    .values(
-        'tombo__id',
-        'autores',
-        'titulo',
-        'ano_publicacao',
-        'edicao',
-        'id_editora__nome',
-        'id_chamada__chamada',
-        'tombo__exemplar',
-        'id_chamada__assunto__descricao'  # Buscamos o campo de descrição diretamente
-    )
-
-    .annotate(
-        tipo=Case(
-            When(tombo__emprestimo__status_emprestimo__tipo='devolvido', then=Value('disponível')),
-            When(tombo__emprestimo__status_emprestimo__tipo='renovado', then=Value('emprestado')),
-            When(tombo__emprestimo__status_emprestimo__tipo='emprestado', then=Value('emprestado')),
-            When(tombo__emprestimo__status_emprestimo__tipo='atrasado', then=Value('emprestado')),
-            default=Value('disponível'),
-            output_field=CharField()
+        RegistroLivros.objects
+        .filter(
+            Q(titulo__icontains=search_query) |
+            Q(id_chamada__assunto__descricao__icontains=search_query) |
+            Q(id__in=Subquery(autores_subquery))
         )
+        .annotate(
+            autores=Concat(
+                F('autores_registro_livros__autores__primeiro_nome'),
+                Value(' '),
+                F('autores_registro_livros__autores__ultimo_nome'),
+                output_field=CharField()
+            )
+        )
+        .values(
+            'tombo__id',
+            'autores',
+            'titulo',
+            'ano_publicacao',
+            'edicao',
+            'id_editora__nome',
+            'id_chamada__chamada',
+            'tombo__exemplar'
+        )
+        .annotate(
+            tipo=Case(
+                When(tombo__emprestimo__status_emprestimo__tipo='devolvido', then=Value('disponível')),
+                When(tombo__emprestimo__status_emprestimo__tipo='renovado', then=Value('emprestado')),
+                When(tombo__emprestimo__status_emprestimo__tipo='emprestado', then=Value('emprestado')),
+                When(tombo__emprestimo__status_emprestimo__tipo='atrasado', then=Value('emprestado')),
+                default=Value('disponível'),
+                output_field=CharField()
+            )
+        )
+        .order_by('titulo')
     )
-    .order_by('titulo')
-)
 
     if search_query:
         results = results.filter(
@@ -623,6 +621,7 @@ def search_results(request):
         return render(request, 'app/users/search_results.html', {'results': results})
     else:
         return render(request, 'app/search_results.html', {'results': results})
+
 
 
 
