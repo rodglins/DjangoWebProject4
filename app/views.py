@@ -567,6 +567,7 @@ Definition open views:
 
 
 
+
 def search_results(request):
     search_query = request.GET.get('q', '')
 
@@ -628,6 +629,7 @@ def search_results(request):
         return render(request, 'app/users/search_results.html', {'results': results})
     else:
         return render(request, 'app/search_results.html', {'results': results})
+
 
 
 
