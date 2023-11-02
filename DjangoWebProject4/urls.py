@@ -36,7 +36,7 @@ urlpatterns = [
     path('select2/', include(select2_urls)),
     path('cadastrar_livro/', views.cadastrar_livro, name='cadastrar_livro'),
     path('cadastrar_usuario/', views.cadastrar_usuario, name='cadastrar_usuario'),
-    path('search_books/', views.search_books, name='search_books'),
+    # path('search_books/', views.search_books, name='search_books'),
     path('search/', views.search_and_save, name='search'),
     path('grafico/', views.grafico, name='grafico'),
     path('', views.home, name='home'),

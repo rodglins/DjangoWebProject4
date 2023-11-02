@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpRequest, HttpResponseBadRequest, JsonResponse, HttpResponse
 from django.db import connection
-from django.db.models import Avg, Sum, Q, Max, F, Value, CharField, Case, When
+from django.db.models import Avg, Sum, Q, Max, F, Value, CharField, Case, When, Subquery
 from django.db.models.functions import Concat
 from django.contrib import messages
 from .models import Book, Cidade, TipoUsuario, RegistroLivros, AutoresRegistroLivros, Autores, Tombo, Usuario, Emprestimo, TipoDeEmprestimo, StatusEmprestimo, LimiteDeLivros, Editora
@@ -566,23 +566,36 @@ Definition open views:
 
 
 def search_results(request):
-    search_query = request.GET.get('q', '0000')
+    search_query = request.GET.get('q', '')
+
+    autores_subquery = Autores.objects.filter(
+        Q(ultimo_nome__icontains=search_query) | Q(primeiro_nome__icontains=search_query)
+    ).values(
+        'registro_livros__id'
+    )
 
     results = (
     RegistroLivros.objects
     .filter(
         Q(titulo__icontains=search_query) |
         Q(id_chamada__assunto__icontains=search_query) |
-        Q(autores_registro_livros__autores__ultimo_nome__icontains=search_query) |
-        Q(autores_registro_livros__autores__primeiro_nome__icontains=search_query) |
-        Q(assuntos_registro_livros__assunto__descricao__icontains=search_query)
+        Q(assuntos_registro_livros__assunto__descricao__icontains=search_query) |
+        Q(id__in=Subquery(autores_subquery))
     )
     .annotate(
-        autores=Concat(
-            'autores_registro_livros__autores__ultimo_nome',
-            Value(', '),
-            'autores_registro_livros__autores__primeiro_nome',
-            output_field=CharField()
+        autores=Subquery(
+            Autores.objects
+            .filter(registro_livros=OuterRef('pk'))
+            .values('registro_livros__id')
+            .annotate(
+                autores_concat=Concat(
+                    'primeiro_nome',
+                    Value(' '),
+                    'ultimo_nome',
+                    output_field=CharField()
+                )
+            )
+            .values_list('autores_concat', flat=True)[:1]
         )
     )
     .values(
@@ -595,6 +608,7 @@ def search_results(request):
         'id_chamada__chamada',
         'tombo__exemplar'
     )
+
     .annotate(
         tipo=Case(
             When(tombo__emprestimo__status_emprestimo__tipo='devolvido', then=Value('disponível')),
@@ -621,12 +635,12 @@ def search_results(request):
 
 
 
-def search_books(request):
-    if request.method == 'GET':
-        query = request.GET.get('query', '0000')  # Obtenha o termo de pesquisa da query string
-        # Realize a pesquisa na base de dados usando o campo 'title' do modelo
-        books = Book.objects.filter(title__icontains=query)
-        return render(request, 'app/search_books.html', {'books': books, 'query': query})
+# def search_books(request):
+#     if request.method == 'GET':
+#         query = request.GET.get('query', '0000')  # Obtenha o termo de pesquisa da query string
+#         # Realize a pesquisa na base de dados usando o campo 'title' do modelo
+#         books = Book.objects.filter(title__icontains=query)
+#         return render(request, 'app/search_books.html', {'books': books, 'query': query})
 
 
 def home(request):
