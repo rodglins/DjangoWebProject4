@@ -564,15 +564,6 @@ Definition open views:
 
 
 
-
-from django.db.models import Q, F, CharField, Value
-from django.db.models.functions import Concat
-from django.db.models import Subquery, OuterRef
-from django.db.models import Case, When
-
-# Importe o modelo AssuntosRegistroLivros aqui
-from .models import AssuntosRegistroLivros
-
 def search_results(request):
     search_query = request.GET.get('q', '')
 
@@ -589,6 +580,8 @@ def search_results(request):
         .annotate(
             autores=Concat(
                 F('autores_registro_livros__autores__primeiro_nome'),
+                Value(' '),
+                F('autores_registro_livros__autores__nome_do_meio'),
                 Value(' '),
                 F('autores_registro_livros__autores__ultimo_nome'),
                 output_field=CharField()
@@ -623,6 +616,7 @@ def search_results(request):
         return render(request, 'app/users/search_results.html', {'results': results})
     else:
         return render(request, 'app/search_results.html', {'results': results})
+
 
 
 
