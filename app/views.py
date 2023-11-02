@@ -571,7 +571,7 @@ def search_results(request):
     autores_subquery = AutoresRegistroLivros.objects.filter(
         Q(autores__ultimo_nome__icontains=search_query) |
         Q(autores__primeiro_nome__icontains=search_query)
-    ).values('registro_livros')
+    ).values('registro_livros__id')
 
     results = (
     RegistroLivros.objects
