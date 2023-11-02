@@ -14,7 +14,7 @@ from django.db import connection
 from django.db.models import Avg, Sum, Q, Max, F, Value, CharField, Case, When, Subquery, OuterRef
 from django.db.models.functions import Concat
 from django.contrib import messages
-from .models import Book, Cidade, TipoUsuario, RegistroLivros, AutoresRegistroLivros, Autores, Tombo, Usuario, Emprestimo, TipoDeEmprestimo, StatusEmprestimo, LimiteDeLivros, Editora, AssuntosRegistroLivros
+from .models import Book, Cidade, TipoUsuario, RegistroLivros, AutoresRegistroLivros, Autores, Tombo, Usuario, Emprestimo, TipoDeEmprestimo, StatusEmprestimo, LimiteDeLivros, Editora, AssuntosRegistroLivros, Assunto
 from .forms import UsuarioForm, ISBNForm, LivroForm, TomboForm, EmprestimoForm, UsuarioForm2, EditoraForm, AutoresForm
 from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidget,Select2Widget
 from django.utils import timezone
@@ -22,6 +22,7 @@ from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib.auth.models import Group
 from django.views.generic import View, ListView, CreateView, UpdateView
 from django.urls import reverse_lazy
+
 
 
 
@@ -564,17 +565,21 @@ Definition open views:
 
 
 
+
+
 def search_results(request):
     search_query = request.GET.get('q', '')
 
-    autores_subquery = AssuntosRegistroLivros.objects.filter(
-        Q(assunto__descricao__icontains=search_query)
+    autores_subquery = AutoresRegistroLivros.objects.filter(
+        Q(autores__ultimo_nome__icontains=search_query) |
+        Q(autores__primeiro_nome__icontains=search_query)
     ).values('registro_livros__id')
 
     results = (
         RegistroLivros.objects
         .filter(
             Q(titulo__icontains=search_query) |
+            Q(assuntos_registro_livros__assunto__descricao__icontains=search_query) |
             Q(id__in=Subquery(autores_subquery))
         )
         .annotate(
@@ -610,13 +615,19 @@ def search_results(request):
         .order_by('titulo')
     )
 
+    if search_query:
+        results = results.filter(
+            Q(assuntos_registro_livros__assunto__descricao__icontains=search_query) |
+            Q(autores_registro_livros__autores__primeiro_nome__icontains=search_query) |
+            Q(autores_registro_livros__autores__ultimo_nome__icontains=search_query)
+        )
+
     if is_admin(request.user):
         return render(request, 'app/adm/search_results.html', {'results': results})
     elif is_users(request.user):
         return render(request, 'app/users/search_results.html', {'results': results})
     else:
         return render(request, 'app/search_results.html', {'results': results})
-
 
 
 
