@@ -87,7 +87,6 @@
                 <th>Editora</th>
                 <th>Chamada</th>
                 <th>Tipo</th>
-                <th>Tombo</th>
             </tr>
             {% for result in results %}
             <tr>
@@ -98,7 +97,6 @@
                 <td>{{ result.id_editora__nome }}</td>
                 <td>{{ result.id_chamada__chamada }}</td>
                 <td>{{ result.tipo }}</td>
-                <td>{{ result.tombo__id }}</td>                
             </tr>
             {% empty %}
             <tr>

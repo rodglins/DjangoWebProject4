@@ -466,32 +466,31 @@ def resultado_query(request):
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT
-    b.id AS tombo,
-    GROUP_CONCAT(CONCAT(aa2.ultimo_nome, ', ', aa2.primeiro_nome) SEPARATOR ' ; ') AS autores,
-    a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar,
-    CASE
-        WHEN f.tipo = 'devolvido' THEN 'disponível'
-        WHEN f.tipo = 'renovado' THEN 'emprestado'
-        WHEN f.tipo = 'emprestado' THEN 'emprestado'
-        WHEN f.tipo = 'atrasado' THEN 'emprestado'
-        ELSE 'disponível'
-    END AS tipo
-FROM app_registrolivros a
-INNER JOIN app_autoresregistrolivros aa ON aa.registro_livros_id = a.id
-INNER JOIN app_autores aa2 ON aa2.id = aa.autores_id
-INNER JOIN app_tombo b ON a.id = b.id_registro_livros_id
-INNER JOIN app_editora c ON a.id_editora_id = c.id
-INNER JOIN app_classificacao d ON a.id_chamada_id = d.id
-LEFT JOIN app_emprestimo e ON e.id_tombo_id = b.id
-LEFT JOIN app_statusemprestimo f ON f.id = e.status_emprestimo_id
-WHERE e.id = (
-    SELECT MAX(id)
-    FROM app_emprestimo
-    WHERE id_tombo_id = e.id_tombo_id 
-)
-GROUP BY b.id, a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar, f.tipo, e.data_devolucao
-ORDER BY a.titulo;
-
+                b.id as tombo,
+                STRING_AGG(CONCAT(aa2.ultimo_nome, ', ', aa2.primeiro_nome), ' ; ') AS autores,
+                a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar,
+                CASE
+                    WHEN f.tipo = 'devolvido' THEN 'disponível'
+                    WHEN f.tipo = 'renovado' THEN 'emprestado'
+                    WHEN f.tipo = 'emprestado' THEN 'emprestado'
+                    WHEN f.tipo = 'atrasado' THEN 'emprestado'
+                    ELSE 'disponível'
+                END AS tipo
+            FROM app_registrolivros a
+            INNER JOIN app_autoresregistrolivros aa ON aa.registro_livros_id = a.id
+            INNER JOIN app_autores aa2 ON aa2.id = aa.autores_id
+            INNER JOIN app_tombo b ON a.id = b.id_registro_livros_id
+            INNER JOIN app_editora c ON a.id_editora_id = c.id
+            INNER JOIN app_classificacao d ON a.id_chamada_id = d.id
+            LEFT JOIN app_emprestimo e ON e.id_tombo_id = b.id
+            LEFT JOIN app_statusemprestimo f ON f.id = e.status_emprestimo_id
+            WHERE e.id = (
+                SELECT MAX(id)
+                FROM app_emprestimo
+                WHERE id_tombo_id = e.id_tombo_id 
+            )
+            GROUP BY b.id, a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar, f.tipo, e.data_devolucao
+            ORDER BY a.titulo
         """)
         results = cursor.fetchall()
 
@@ -565,39 +564,44 @@ Definition open views:
 """
 
 
-
-
 def search_results(request):
-    search_query = request.GET.get('q', '0000')
+    search_query = request.GET.get('q', '')
 
     autores_subquery = AutoresRegistroLivros.objects.filter(
         Q(autores__ultimo_nome__icontains=search_query) |
         Q(autores__primeiro_nome__icontains=search_query)
-    ).values('registro_livros')
+    ).values('registro_livros__id')
 
-    assuntos_subquery = AssuntosRegistroLivros.objects.filter(
-        assunto__descricao__icontains=search_query
-    ).values('registro_livros')
-
+    assunto_subquery = RegistroLivros.objects.filter(
+        id__in=Subquery(autores_subquery)
+    ).values('assuntos_registro_livros__assunto__id')
 
     results = (
         RegistroLivros.objects
         .filter(
             Q(titulo__icontains=search_query) |
-            Q(id__in=Subquery(autores_subquery)) |
-            Q(id__in=Subquery(assuntos_subquery))
+            Q(assuntos_registro_livros__assunto__descricao__icontains=search_query) |
+            Q(id__in=Subquery(autores_subquery))
+        )
+        .annotate(
+            autores=Concat(
+                F('autores_registro_livros__autores__primeiro_nome'),
+                Value(' '),
+                F('autores_registro_livros__autores__nome_do_meio'),
+                Value(' '),
+                F('autores_registro_livros__autores__ultimo_nome'),
+                output_field=CharField()
+            )
         )
         .values(
-            'id',
-            'autores_registro_livros__autores_registros_livros__autores__primeiro_nome',
-            'autores_registro_livros__autores_registros_livros__autores__ultimo_nome',
+            'tombo__id',
+            'autores',
             'titulo',
             'ano_publicacao',
             'edicao',
             'id_editora__nome',
             'id_chamada__chamada',
             'tombo__exemplar',
-            'tombo__id',
         )
         .annotate(
             tipo=Case(
@@ -612,15 +616,12 @@ def search_results(request):
         .order_by('titulo')
     )
 
-    results = results.distinct('tombo__id')
-
-    # Concatenar nomes dos autores
-    for result in results:
-        autores = AutoresRegistroLivros.objects.filter(registro_livros=result['id']).values_list(
-            Concat(F('autores__ultimo_nome'), Value(', '),F('autores__primeiro_nome'), Value(' '), F('autores__nome_do_meio'), output_field=CharField()),
-            flat=True
+    if search_query:
+        results = results.filter(
+            Q(assuntos_registro_livros__assunto__descricao__icontains=search_query) |
+            Q(autores_registro_livros__autores__primeiro_nome__icontains=search_query) |
+            Q(autores_registro_livros__autores__ultimo_nome__icontains=search_query)
         )
-        result['autores'] = '; '.join(autores)
 
     if is_admin(request.user):
         return render(request, 'app/adm/search_results.html', {'results': results})
@@ -631,70 +632,6 @@ def search_results(request):
 
 
 
-
-
-#def search_results(request):
-#    search_query = request.GET.get('q', '')
-
-#    autores_subquery = AutoresRegistroLivros.objects.filter(
-#        registro_livros=OuterRef('id'),
-#        Q(autores__ultimo_nome__icontains=search_query) |
-#        Q(autores__primeiro_nome__icontains=search_query)
-#    ).values('autores')
-
-#    assuntos_subquery = AssuntosRegistroLivros.objects.filter(
-#        registro_livros=OuterRef('id'),
-#        assunto__descricao__icontains=search_query
-#    ).values('assunto')
-
-#    results = (
-#        RegistroLivros.objects
-#        .filter(
-#            Q(titulo__icontains=search_query) |
-#            Q(id__in=Subquery(autores_subquery)) |
-#            Q(id__in=Subquery(assuntos_subquery))
-#        )
-#        .annotate(
-#            autores=Concat(
-#                F('autores_registro_livros__autores__primeiro_nome'),
-#                Value(' '),
-#                F('autores_registro_livros__autores__nome_do_meio'),
-#                Value(' '),
-#                F('autores_registro_livros__autores__ultimo_nome'),
-#                output_field=CharField()
-#            ),
-#            editora=F('id_editora__nome'),
-#            chamada=F('id_chamada__chamada'),
-#        )
-#        .values(
-#            'id',
-#            'autores',
-#            'titulo',
-#            'ano_publicacao',
-#            'edicao',
-#            'id_editora__nome',
-#            'id_chamada__chamada',
-#            'tombo__exemplar',
-#        )
-#        .annotate(
-#            tipo=Case(
-#                When(tombo__emprestimo__status_emprestimo__tipo='devolvido', then=Value('disponível')),
-#                When(tombo__emprestimo__status_emprestimo__tipo='renovado', then=Value('emprestado')),
-#                When(tombo__emprestimo__status_emprestimo__tipo='emprestado', then=Value('emprestado')),
-#                When(tombo__emprestimo__status_emprestimo__tipo='atrasado', then=Value('emprestado')),
-#                default=Value('disponível'),
-#                output_field=CharField()
-#            )
-#        )
-#        .order_by('titulo')
-#    )
-
-#    if is_admin(request.user):
-#        return render(request, 'app/adm/search_results.html', {'results': results})
-#    elif is_users(request.user):
-#        return render(request, 'app/users/search_results.html', {'results': results})
-#    else:
-#        return render(request, 'app/search_results.html', {'results': results})
 
 
 
