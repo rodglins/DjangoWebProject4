@@ -612,7 +612,8 @@ def search_results(request):
         .order_by('titulo')
     )
 
-    results = results.distinct('tombo__id')
+    results = results.order_by('tombo__id', 'titulo').distinct('tombo__id')
+
 
     # Concatenar nomes dos autores
     for result in results:
