@@ -461,37 +461,76 @@ def grafico(request):
     return render(request, 'app/adm/grafico.html', context)
 
 
+# @user_passes_test(is_admin)
+# def resultado_query(request):
+#     with connection.cursor() as cursor:
+#         cursor.execute("""
+#             SELECT
+#     b.id AS tombo,
+#     GROUP_CONCAT(CONCAT(aa2.ultimo_nome, ', ', aa2.primeiro_nome) SEPARATOR ' ; ') AS autores,
+#     a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar,
+#     CASE
+#         WHEN f.tipo = 'devolvido' THEN 'disponível'
+#         WHEN f.tipo = 'renovado' THEN 'emprestado'
+#         WHEN f.tipo = 'emprestado' THEN 'emprestado'
+#         WHEN f.tipo = 'atrasado' THEN 'emprestado'
+#         ELSE 'disponível'
+#     END AS tipo
+# FROM app_registrolivros a
+# INNER JOIN app_autoresregistrolivros aa ON aa.registro_livros_id = a.id
+# INNER JOIN app_autores aa2 ON aa2.id = aa.autores_id
+# INNER JOIN app_tombo b ON a.id = b.id_registro_livros_id
+# INNER JOIN app_editora c ON a.id_editora_id = c.id
+# INNER JOIN app_classificacao d ON a.id_chamada_id = d.id
+# LEFT JOIN app_emprestimo e ON e.id_tombo_id = b.id
+# LEFT JOIN app_statusemprestimo f ON f.id = e.status_emprestimo_id
+# WHERE e.id = (
+#     SELECT MAX(id)
+#     FROM app_emprestimo
+#     WHERE id_tombo_id = e.id_tombo_id 
+# )
+# GROUP BY b.id, a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar, f.tipo, e.data_devolucao
+# ORDER BY a.titulo;
+
+#         """)
+#         results = cursor.fetchall()
+
+#     context = {'results': results}
+#     return render(request, 'app/adm/resultado_query.html', context)
+
+
+
+
 @user_passes_test(is_admin)
 def resultado_query(request):
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT
-    b.id AS tombo,
-    GROUP_CONCAT(CONCAT(aa2.ultimo_nome, ', ', aa2.primeiro_nome) SEPARATOR ' ; ') AS autores,
-    a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar,
-    CASE
-        WHEN f.tipo = 'devolvido' THEN 'disponível'
-        WHEN f.tipo = 'renovado' THEN 'emprestado'
-        WHEN f.tipo = 'emprestado' THEN 'emprestado'
-        WHEN f.tipo = 'atrasado' THEN 'emprestado'
-        ELSE 'disponível'
-    END AS tipo
-FROM app_registrolivros a
-INNER JOIN app_autoresregistrolivros aa ON aa.registro_livros_id = a.id
-INNER JOIN app_autores aa2 ON aa2.id = aa.autores_id
-INNER JOIN app_tombo b ON a.id = b.id_registro_livros_id
-INNER JOIN app_editora c ON a.id_editora_id = c.id
-INNER JOIN app_classificacao d ON a.id_chamada_id = d.id
-LEFT JOIN app_emprestimo e ON e.id_tombo_id = b.id
-LEFT JOIN app_statusemprestimo f ON f.id = e.status_emprestimo_id
-WHERE e.id = (
-    SELECT MAX(id)
-    FROM app_emprestimo
-    WHERE id_tombo_id = e.id_tombo_id 
-)
-GROUP BY b.id, a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar, f.tipo, e.data_devolucao
-ORDER BY a.titulo;
-
+                b.id AS tombo,
+                string_agg(aa2.ultimo_nome || ', ' || aa2.primeiro_nome, ' ; ') AS autores,
+                a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar,
+                CASE
+                    WHEN f.tipo = 'devolvido' THEN 'disponível'
+                    WHEN f.tipo = 'renovado' THEN 'renovado'
+                    WHEN f.tipo = 'emprestado' THEN 'emprestado'
+                    WHEN f.tipo = 'atrasado' THEN 'atrasado'
+                    ELSE 'disponível'
+                END AS tipo
+            FROM app_registrolivros a
+            INNER JOIN app_autoresregistrolivros aa ON aa.registro_livros_id = a.id
+            INNER JOIN app_autores aa2 ON aa2.id = aa.autores_id
+            INNER JOIN app_tombo b ON a.id = b.id_registro_livros_id
+            INNER JOIN app_editora c ON a.id_editora_id = c.id
+            INNER JOIN app_classificacao d ON a.id_chamada_id = d.id
+            LEFT JOIN app_emprestimo e ON e.id_tombo_id = b.id
+            LEFT JOIN app_statusemprestimo f ON f.id = e.status_emprestimo_id
+            WHERE (e.id_tombo_id, e.id) IN (
+                SELECT id_tombo_id, max(id) AS max_id
+                FROM app_emprestimo
+                GROUP BY id_tombo_id
+            )
+            GROUP BY b.id, a.titulo, a.ano_publicacao, a.edicao, c.nome, d.chamada, b.exemplar, f.tipo, e.data_devolucao
+            ORDER BY a.titulo;
         """)
         results = cursor.fetchall()
 
@@ -539,7 +578,7 @@ def editora_edit(request, editora_id):
 
 
 
-
+@user_passes_test(is_admin)
 def criar_autor(request):
     if request.method == 'POST':
         form = AutoresForm(request.POST)
@@ -598,13 +637,15 @@ def search_results(request):
             'id_chamada__chamada',
             'tombo__exemplar',
             'tombo__id',
+            'tombo__emprestimo__status_emprestimo__tipo'  # Adicione isso para obter o tipo do status
+
         )
         .annotate(
             tipo=Case(
                 When(tombo__emprestimo__status_emprestimo__tipo='devolvido', then=Value('disponível')),
-                When(tombo__emprestimo__status_emprestimo__tipo='renovado', then=Value('emprestado')),
+                When(tombo__emprestimo__status_emprestimo__tipo='renovado', then=Value('renovado')),
                 When(tombo__emprestimo__status_emprestimo__tipo='emprestado', then=Value('emprestado')),
-                When(tombo__emprestimo__status_emprestimo__tipo='atrasado', then=Value('emprestado')),
+                When(tombo__emprestimo__status_emprestimo__tipo='atrasado', then=Value('atrasado')),
                 default=Value('disponível'),
                 output_field=CharField()
             )
