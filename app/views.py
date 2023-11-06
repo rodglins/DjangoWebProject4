@@ -26,7 +26,6 @@ from django.urls import reverse_lazy
 
 
 
-
 """
 Definition of groups:
 """
@@ -653,7 +652,10 @@ def search_results(request):
         .order_by('titulo')
     )
 
-    results = results.order_by('tombo__id', 'titulo').distinct('tombo__id')
+    #results = results.order_by('tombo__id', 'titulo').distinct('tombo__id')
+
+    results = results.values('tombo__emprestimo__status_emprestimo__id').annotate(max_id=Max('id')).distinct('tombo__id')
+
 
 
     # Concatenar nomes dos autores
