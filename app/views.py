@@ -617,6 +617,8 @@ def search_results(request):
         assunto__descricao__icontains=search_query
     ).values('registro_livros')
 
+    max_id_subquery = Emprestimo.objects.filter(id_tombo=OuterRef('id_tombo')).values('id_tombo').annotate(max_id=Max('id')).values('max_id')
+
 
     results = (
         RegistroLivros.objects
@@ -652,9 +654,9 @@ def search_results(request):
         .order_by('titulo')
     )
 
-    #results = results.order_by('tombo__id', 'titulo').distinct('tombo__id')
+    results = results.order_by('tombo__id', 'titulo').distinct('tombo__id')
 
-    results = results.values('tombo__emprestimo__status_emprestimo__id').annotate(max_id=Max('id')).distinct('tombo__id')
+    #results = results.values('tombo__emprestimo__status_emprestimo__id').annotate(max_id=Max('id')).distinct('tombo__id')
 
 
 
