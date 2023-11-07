@@ -617,7 +617,8 @@ def search_results(request):
         assunto__descricao__icontains=search_query
     ).values('registro_livros')
 
-    max_id_subquery = Emprestimo.objects.filter(id_tombo=OuterRef('id_tombo')).values('id_tombo').annotate(max_id=Max('id')).values('max_id')
+    max_id_subquery = Emprestimo.objects.filter(id_tombo=OuterRef('tombo__id')).values('id_tombo').annotate(max_id=Max('id')).values('max_id')
+
 
 
     results = (
@@ -627,9 +628,11 @@ def search_results(request):
             Q(id__in=Subquery(autores_subquery)) |
             Q(id__in=Subquery(assuntos_subquery))
         )
-        .filter(
-            tombo__id_tombo_emprestimo__in=Subquery(max_id_subquery)
+
+        .annotate(
+            max_emprestimo_id=Subquery(max_id_subquery, output_field=IntegerField())
         )
+
         .values(
             'id',
             'autores_registro_livros__autores_registros_livros__autores__primeiro_nome',
@@ -641,23 +644,36 @@ def search_results(request):
             'id_chamada__chamada',
             'tombo__exemplar',
             'tombo__id',
-            'tombo__emprestimo__status_emprestimo__tipo'  # Adicione isso para obter o tipo do status
+            'tombo__emprestimo__status_emprestimo__tipo',
+            'max_emprestimo_id'
 
         )
-        .annotate(
+        # .annotate(
+        #     tipo=Case(
+        #         When(tombo__emprestimo__status_emprestimo__tipo='devolvido', then=Value('disponível')),
+        #         When(tombo__emprestimo__status_emprestimo__tipo='renovado', then=Value('renovado')),
+        #         When(tombo__emprestimo__status_emprestimo__tipo='emprestado', then=Value('emprestado')),
+        #         When(tombo__emprestimo__status_emprestimo__tipo='atrasado', then=Value('atrasado')),
+        #         default=Value('disponível'),
+        #         output_field=CharField()
+        #     )
+        # )
+
+    .annotate(
             tipo=Case(
-                When(tombo__emprestimo__status_emprestimo__tipo='devolvido', then=Value('disponível')),
-                When(tombo__emprestimo__status_emprestimo__tipo='renovado', then=Value('renovado')),
-                When(tombo__emprestimo__status_emprestimo__tipo='emprestado', then=Value('emprestado')),
-                When(tombo__emprestimo__status_emprestimo__tipo='atrasado', then=Value('atrasado')),
+                When(tombo__emprestimo__id=F('max_emprestimo_id'), then=F('tombo__emprestimo__status_emprestimo__tipo')),
                 default=Value('disponível'),
                 output_field=CharField()
             )
-        )
+        )    
+
+
+
         .order_by('titulo')
     )
 
     results = results.order_by('tombo__id', 'titulo').distinct('tombo__id')
+
 
     #results = results.values('tombo__emprestimo__status_emprestimo__id').annotate(max_id=Max('id')).distinct('tombo__id')
 
