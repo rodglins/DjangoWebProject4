@@ -627,6 +627,9 @@ def search_results(request):
             Q(id__in=Subquery(autores_subquery)) |
             Q(id__in=Subquery(assuntos_subquery))
         )
+        .filter(
+            tombo__id_tombo_emprestimo__in=Subquery(max_id_subquery)
+        )
         .values(
             'id',
             'autores_registro_livros__autores_registros_livros__autores__primeiro_nome',
