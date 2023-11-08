@@ -75,12 +75,6 @@
 
         <form method="GET" action="{% url 'search_results' %}">
     <input type="text" name="q" placeholder="Pesquisar" value="{{ request.GET.q }}">
-    <select name="campo">
-        <option value="titulo">Título</option>
-        <option value="assunto">Assunto</option>
-        <option value="autores">Autores</option>
-        <option value="descricao">Descrição</option>
-    </select>
     <button type="submit">Pesquisar</button>
     </form>
 
