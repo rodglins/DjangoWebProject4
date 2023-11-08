@@ -638,7 +638,6 @@ def search_results(request):
             'tombo__exemplar',
             'tombo__id',
             'tombo__emprestimo__status_emprestimo__tipo',
-            'max_emprestimo_id'
 
         )
 
