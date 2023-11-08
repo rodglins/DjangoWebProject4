@@ -92,7 +92,6 @@
                 <th>Edicao</th>
                 <th>Editora</th>
                 <th>Chamada</th>
-                <th>Tipo</th>
             </tr>
             {% for result in results %}
             <tr>
@@ -102,7 +101,6 @@
                 <td>{{ result.edicao }}</td>
                 <td>{{ result.id_editora__nome }}</td>
                 <td>{{ result.id_chamada__chamada }}</td>
-                <td>{{ result.tipo }}</td>
             </tr>
             {% empty %}
             <tr>

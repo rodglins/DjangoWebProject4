@@ -617,20 +617,13 @@ def search_results(request):
         assunto__descricao__icontains=search_query
     ).values('registro_livros')
 
-    max_id_subquery = Emprestimo.objects.filter(id_tombo=OuterRef('tombo__id')).values('id_tombo').annotate(max_id=Max('id')).values('max_id')
-
-
-
+    
     results = (
         RegistroLivros.objects
         .filter(
             Q(titulo__icontains=search_query) |
             Q(id__in=Subquery(autores_subquery)) |
             Q(id__in=Subquery(assuntos_subquery))
-        )
-
-        .annotate(
-            max_emprestimo_id=Subquery(max_id_subquery, output_field=IntegerField())
         )
 
         .values(
@@ -648,25 +641,17 @@ def search_results(request):
             'max_emprestimo_id'
 
         )
-        # .annotate(
-        #     tipo=Case(
-        #         When(tombo__emprestimo__status_emprestimo__tipo='devolvido', then=Value('disponível')),
-        #         When(tombo__emprestimo__status_emprestimo__tipo='renovado', then=Value('renovado')),
-        #         When(tombo__emprestimo__status_emprestimo__tipo='emprestado', then=Value('emprestado')),
-        #         When(tombo__emprestimo__status_emprestimo__tipo='atrasado', then=Value('atrasado')),
-        #         default=Value('disponível'),
-        #         output_field=CharField()
-        #     )
-        # )
 
-    .annotate(
-            tipo=Case(
-                When(tombo__emprestimo__id=F('max_emprestimo_id'), then=F('tombo__emprestimo__status_emprestimo__tipo')),
-                default=Value('disponível'),
-                output_field=CharField()
-            )
-        )    
-
+       .annotate(
+           tipo=Case(
+               When(tombo__emprestimo__status_emprestimo__tipo='devolvido', then=Value('disponível')),
+               When(tombo__emprestimo__status_emprestimo__tipo='renovado', then=Value('emprestado')),
+               When(tombo__emprestimo__status_emprestimo__tipo='emprestado', then=Value('emprestado')),
+               When(tombo__emprestimo__status_emprestimo__tipo='atrasado', then=Value('emprestado')),
+               default=Value('disponível'),
+               output_field=CharField()
+           )
+       )   
 
 
         .order_by('titulo')
@@ -674,8 +659,6 @@ def search_results(request):
 
     results = results.order_by('tombo__id', 'titulo').distinct('tombo__id')
 
-
-    #results = results.values('tombo__emprestimo__status_emprestimo__id').annotate(max_id=Max('id')).distinct('tombo__id')
 
 
 
