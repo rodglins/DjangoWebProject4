@@ -389,13 +389,17 @@ def search_and_save(request):
                     cover_large=book_data.get('cover', {}).get('large', '')
                 )
 
+                # try:
+                #     connection = mysql.connector.connect(
+                #         host='localhost',
+                #         user='root',
+                #         password='pi2023g13',
+                #         database='library'
+                #         )
                 try:
-                    connection = mysql.connector.connect(
-                        host='localhost',
-                        user='root',
-                        password='pi2023g13',
-                        database='library'
-                        )
+                    connection = connections['default']
+                    cursor = connection.cursor()
+                                       
                     if created:
                         # Executar a procedure para inserir na tabela app_editora
                         cursor = connection.cursor()

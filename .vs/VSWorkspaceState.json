@@ -2,8 +2,16 @@
   "ExpandedNodes": [
     "",
     "\\app",
-    "\\DjangoWebProject4"
+    "\\app\\static",
+    "\\app\\static\\app",
+    "\\app\\static\\app\\content",
+    "\\app\\static\\app\\fonts",
+    "\\app\\static\\app\\scripts",
+    "\\static\\app",
+    "\\static\\app\\static",
+    "\\static\\app\\static\\app",
+    "\\static\\app\\static\\app\\content"
   ],
-  "SelectedNode": "\\DjangoWebProject4\\settings.py",
+  "SelectedNode": "\\DjangoWebProject4\\urls.py",
   "PreviewInSolutionExplorer": false
 }
